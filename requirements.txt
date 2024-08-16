@@ -1,0 +1,58 @@
+black==24.8.0
+Brotli @ file:///C:/b/abs_3d36mno480/croot/brotli-split_1714483178642/work
+certifi @ file:///C:/b/abs_7bbxxprxir/croot/certifi_1720453609121/work/certifi
+charset-normalizer @ file:///croot/charset-normalizer_1721748349566/work
+click==8.1.7
+colorama==0.4.6
+contourpy==1.2.1
+cycler==0.12.1
+filelock @ file:///C:/b/abs_f2gie28u58/croot/filelock_1700591233643/work
+fonttools==4.53.1
+fsspec==2024.6.1
+gmpy2 @ file:///C:/ci/gmpy2_1645438895476/work
+huggingface-hub==0.24.5
+idna @ file:///C:/b/abs_aad84bnnw5/croot/idna_1714398896795/work
+Jinja2 @ file:///C:/b/abs_92fccttino/croot/jinja2_1716993447201/work
+joblib==1.4.2
+kiwisolver==1.4.5
+markdown-it-py==3.0.0
+MarkupSafe @ file:///C:/b/abs_ecfdqh67b_/croot/markupsafe_1704206030535/work
+matplotlib==3.9.1.post1
+mdurl==0.1.2
+mkl-fft @ file:///C:/b/abs_19i1y8ykas/croot/mkl_fft_1695058226480/work
+mkl-random @ file:///C:/b/abs_edwkj1_o69/croot/mkl_random_1695059866750/work
+mkl-service==2.4.0
+mpmath @ file:///C:/b/abs_7833jrbiox/croot/mpmath_1690848321154/work
+mypy-extensions==1.0.0
+networkx @ file:///C:/b/abs_36fmumtynt/croot/networkx_1720002497414/work
+numpy @ file:///C:/b/abs_c1ywpu18ar/croot/numpy_and_numpy_base_1708638681471/work/dist/numpy-1.26.4-cp310-cp310-win_amd64.whl#sha256=ebb5aa2b36d8afa5ec3231c19e5a1fc75b6d85e7db483f0fb9e77dad58469977
+packaging==24.1
+pandas==2.2.2
+pathspec==0.12.1
+pillow==10.4.0
+platformdirs==4.2.2
+Pygments==2.18.0
+pyparsing==3.1.2
+PySocks @ file:///C:/ci_310/pysocks_1642089375450/work
+python-dateutil==2.9.0.post0
+pytz==2024.1
+PyYAML @ file:///C:/b/abs_782o3mbw7z/croot/pyyaml_1698096085010/work
+requests @ file:///C:/b/abs_9frifg92q2/croot/requests_1721410901096/work
+rich==13.7.1
+safetensors==0.4.4
+scikit-learn==1.5.1
+scipy==1.14.0
+seaborn==0.13.2
+six==1.16.0
+sympy @ file:///C:/b/abs_82njkonm7f/croot/sympy_1701397685028/work
+threadpoolctl==3.5.0
+timm==1.0.8
+tomli==2.0.1
+torch==2.1.2
+torchaudio==2.1.2
+torchvision==0.16.2
+tqdm==4.66.5
+typing_extensions @ file:///C:/b/abs_0as9mdbkfl/croot/typing_extensions_1715268906610/work
+tzdata==2024.1
+urllib3 @ file:///C:/b/abs_a7hvzm4y95/croot/urllib3_1718912661242/work
+win-inet-pton @ file:///C:/ci_310/win_inet_pton_1642658466512/work
