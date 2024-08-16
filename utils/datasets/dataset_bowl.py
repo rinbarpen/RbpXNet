@@ -1,0 +1,74 @@
+import os.path
+from torch.utils.data import Dataset
+from typing import Literal, Tuple, List
+import os
+from pathlib import Path
+
+from torchvision import transforms
+from PIL import Image
+import sys
+
+import logging
+
+class Bowl2018Dataset(Dataset):
+  def __init__(self, bowl_dir, split: Literal['train', 'valid', 'test'], train_valid_test: List[float], transformers=None):
+    super(Bowl2018Dataset, self).__init__()
+    self.bowl_dir = Path(bowl_dir)
+    self.transformers = transformers
+
+    self.images_dir = self.bowl_dir / 'stage1_train'
+    if split == 'train':
+      self.images, self.masks = self._load_image_and_mask(split, train_valid_test)
+    elif split == 'valid':
+      self.images, self.masks = self._load_image_and_mask(split, train_valid_test)
+    elif split == 'test':
+      self.images, self.masks = self._load_image_and_mask(split, train_valid_test)
+    
+  def __len__(self):
+    return len(self.images)
+
+  def _load_image_and_mask(self, split, train_valid_test: List[float]) -> Tuple[list, list]:
+    images, masks = [], [[]]
+    for d in os.listdir(self.images_dir):
+      images.extend([x for x in (self.images_dir / d / 'images').glob('.png')])
+      masks.append([x for x in (self.images_dir / d / 'masks').glob('.png')])
+    
+    if split == 'train':
+      right = int(len(images) * train_valid_test[0])
+      images = images[:right]
+      masks = masks[:right]
+    elif split == 'valid':
+      left = int(len(images) * train_valid_test[0])
+      right = int(len(images) * train_valid_test[1])
+      images = images[left:right]
+      masks = masks[left:right]
+    elif split == 'test':
+      left = int(len(images) * train_valid_test[1])
+      images = images[left:]
+      masks = masks[left:]
+  
+    return images, masks
+
+  def __getitem__(self, idx):
+    image_path = self.images[idx]
+    mask_paths = self.masks[idx]
+    
+    try:
+      img = Image.open(image_path).convert('RGB')
+      masks = [Image.open(mask_path).convert('L') for mask_path in mask_paths]
+
+      if self.transformers:
+        img, masks = self.transformers(img, masks)
+
+    except Exception as e:
+      logging.error(f'Error loading image or mask at index {idx}: {e}')
+      return None, None
+    
+    return img, masks
+  
+  @staticmethod
+  def get_train_valid_and_test(bowl_dir, train_valid_test: List[float], transformers=None):
+    train_set = Bowl2018Dataset(bowl_dir, 'train', train_valid_test, transformers=transformers)
+    valid_set = Bowl2018Dataset(bowl_dir, 'valid', train_valid_test, transformers=transformers)
+    test_set  = Bowl2018Dataset(bowl_dir, 'test',  train_valid_test, transformers=transformers)
+    return (train_set, valid_set, test_set)

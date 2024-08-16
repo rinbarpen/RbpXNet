@@ -1,0 +1,83 @@
+from torch.utils.data import Dataset
+from typing import Literal, Tuple
+import os
+from pathlib import Path
+
+from torchvision import transforms
+from PIL import Image
+import sys
+
+import logging
+
+class PolypGen2021Dataset(Dataset):
+  def __init__(self, polyp_dir, split: Literal['train', 'valid', 'test'], transformers=None, valid_ratio=0.2):
+    super(PolypGen2021Dataset, self).__init__()
+    self.polyp_dir = Path(polyp_dir)
+    self.transformers = transformers
+    self.valid_ratio = valid_ratio
+
+    if split == 'train':
+      self.images, self.masks = self._load_train_valid_split(valid=False)
+    elif split == 'valid':
+      self.images, self.masks = self._load_train_valid_split(valid=True)
+    elif split == 'test':
+      self.images, self.masks = self._load_test_split()
+    
+  def __len__(self):
+    return len(self.images)
+
+  def _load_train_valid_split(self, valid=False) -> Tuple[list, list]:
+    image_file = 'train_autoencoder.txt'
+    mask_file = 'train_segmentation.txt'
+    image_list = self._load_file_list(image_file)
+    mask_list = self._load_file_list(mask_file)
+
+    dataset_size = len(image_list)
+    valid_size = int(self.valid_ratio * dataset_size)
+    train_size = dataset_size - valid_size
+
+    if valid:
+      return image_list[train_size:], mask_list[train_size:]
+    else:
+      return image_list[:train_size], mask_list[:train_size]
+
+  def _load_test_split(self) -> Tuple[list, list]:
+    image_file = 'test_autoencoder.txt'
+    mask_file = 'test_segmentation.txt'
+    return self._load_file_list(image_file), self._load_file_list(mask_file)
+
+  def _load_file_list(self, file_name: str) -> list:
+    file_path = self.polyp_dir / file_name
+    try:
+      with open(file_path) as f:
+        return sorted(line.strip() for line in f if line.strip().startswith('positive'))
+    except FileNotFoundError:
+      logging.error(f'File not found: {file_path}')
+      return []
+    except Exception as e:
+      logging.error(f'Error reading file {file_path}: {e}')
+      return []
+      
+  def __getitem__(self, idx):
+    img_path = self.polyp_dir / self.images[idx]
+    mask_path = self.polyp_dir / self.masks[idx]
+    
+    try:
+      img = Image.open(img_path).convert('RGB')
+      mask = Image.open(mask_path).convert('L')
+
+      if self.transformers:
+        img, mask = self.transformers(img, mask)
+
+    except Exception as e:
+      logging.error(f'Error loading image or mask at index {idx}: {e}')
+      return None, None
+    
+    return img, mask
+  
+  @staticmethod
+  def get_train_valid_and_test(polyp_dir, ratio, transformers=None):
+    train_set = PolypGen2021Dataset(polyp_dir, 'train', valid_ratio=ratio, transformers=transformers)
+    valid_set = PolypGen2021Dataset(polyp_dir, 'valid', valid_ratio=ratio, transformers=transformers)
+    test_set = PolypGen2021Dataset(polyp_dir, 'test', valid_ratio=ratio, transformers=transformers)
+    return (train_set, valid_set, test_set)
