@@ -23,14 +23,13 @@ def test_model(model, device,
     pin_memory=True,
   )
   
-  step = 0
   n_step = len(test_loader)
   device = model.get_device()
   metrics = []
-  with tqdm(total=n_step, desc=f'Testing... {step}/{n_step}'):
+  with tqdm(total=n_step, desc=f'Testing'):
     with torch.no_grad():
-      for inputs, labels in tqdm(test_loader, desc='Testing', ncols=100):
-        inputs, labels = inputs.to(device), labels.to(device)
+      for inputs, labels in test_loader:
+        # inputs, labels = inputs.to(device), labels.to(device)
         
         outputs = model(inputs)
         

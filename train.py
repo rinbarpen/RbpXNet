@@ -5,18 +5,16 @@ import logging
 from torch.utils.data import DataLoader
 from tqdm import tqdm, trange
 from typing import *
-from utils.metrics import get_metrics, calculate_average_metrics
-from utils.visualization import draw_loss_graph
+from utils.visualization import *
+from evaluate import *
+import wandb
 
 
 def train_one_epoch(model, device, epoch, train_loader, optimizer, criterion):
   model.train()
   train_loss = 0.0
   
-  step = 0
-  n_step = len(train_loader)
-
-  with tqdm(total=n_step, desc=f'Training... {step}/{n_step}') as pbar:
+  with tqdm(total=len(train_loader), desc=f'Training') as pbar:
     for inputs, labels in train_loader:
       optimizer.zero_grad()
       inputs, labels = inputs.to(device), labels.to(device)
@@ -26,43 +24,17 @@ def train_one_epoch(model, device, epoch, train_loader, optimizer, criterion):
       loss.backward()
       train_loss += loss.item()
       
-      step = step + 1
-
+      pbar.update()
       pbar.set_postfix(**{'loss(batch)': loss.item()})
   
-  train_loss /= len(train_loader.dataset)
+  train_loss /= len(train_loader)
   
   return train_loss
 
 
-def valid_one_epoch(model, device, epoch, valid_loader, criterion, n_classes, average):
-  model.eval()
-  val_loss = 0.0
-
-  step = 0
-  n_step = len(valid_loader)
-
-  with tqdm(total=n_step, desc=f'Validating... {step}/{n_step}') as pbar:
-    with torch.no_grad():
-      for inputs, labels in valid_loader:
-        inputs, labels = inputs.to(device), labels.to(device)
-        
-        outputs = model(inputs)
-        loss = criterion(outputs, labels)
-        val_loss += loss.item() * inputs.size(0)
-
-        step = step + 1
-
-        pbar.set_postfix(**{'loss(batch)': loss.item()})
-
-  val_loss /= len(valid_loader.dataset)
-
-  return val_loss
-
-
 def train_model(model, device, 
                 train_dataset, valid_dataset, batch_size: int, 
-                n_epoch: int, 
+                epochs: int, 
                 lr: float,
                 n_classes: int,
                 num_workers: int=0, 
@@ -93,14 +65,14 @@ def train_model(model, device,
 
   train_losses = []
   valid_losses = []
-  for epoch in trange(n_epoch, desc='Epoch: '):
+  for epoch in trange(epochs, desc='Epoch: '):
     train_loss = train_one_epoch(model, device, epoch, 
       train_loader=train_loader, optimizer=optimizer, criterion=criterion)
     val_loss = valid_one_epoch(model, device, epoch, 
       valid_loader=valid_loader, criterion=criterion, 
       n_classes=n_classes, average=average)
 
-    print(f"Epoch {epoch+1}/{n_epoch}, Train Loss: {train_loss:.4f}, "
+    print(f"Epoch {epoch+1}/{epochs}, Train Loss: {train_loss:.4f}, "
           f"Validation Loss: {val_loss:.4f}")
 
     train_losses.append(train_loss)
@@ -109,6 +81,7 @@ def train_model(model, device,
     if val_loss < best_val_loss:
       best_val_loss = val_loss
       torch.save(model.state_dict(), saved_model_filename)
+      wandb.log(f'save model to {saved_model_filename} when epoch={epoch}, loss={val_loss}')
       logging.info(f'save model to {saved_model_filename} when epoch={epoch}, loss={val_loss}')
 
   return train_losses, valid_losses 

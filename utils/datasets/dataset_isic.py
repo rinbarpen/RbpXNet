@@ -3,18 +3,17 @@ from typing import Literal, List, Tuple
 import os
 from pathlib import Path
 import pandas as pd
-
-from torchvision import transforms
+  
 from PIL import Image
 import sys
 
 
 
 class ISIC2017Dataset(Dataset):
-  def __init__(self, isic_dir, split: Literal['train', 'test', 'valid'], transformers=None):
+  def __init__(self, isic_dir, split: Literal['train', 'test', 'valid'], transforms=None):
     super(ISIC2017Dataset, self).__init__()
     self.isic_dir = Path(isic_dir)
-    self.transformers = transformers
+    self.transforms = transforms
 
     if split == 'train': 
       self.images_dir = self.isic_dir / 'ISIC-2017_Training_Data'
@@ -49,8 +48,8 @@ class ISIC2017Dataset(Dataset):
     except Exception as e:
       raise RuntimeError(f"Error loading image or mask at index {idx}: {e}")
 
-    if self.transformers:
-      img, mask = self.transformers(img, mask)
+    if self.transforms:
+      img, mask = self.transforms(img, mask)
 
     return img, mask
 
@@ -61,18 +60,18 @@ class ISIC2017Dataset(Dataset):
     return self.masks
 
   @staticmethod
-  def get_train_valid_and_test(isic_dir, transformers=None):
-    train_set = ISIC2017Dataset(isic_dir, 'train', transformers=transformers)
-    valid_set = ISIC2017Dataset(isic_dir, 'valid', transformers=transformers)
-    test_set  = ISIC2017Dataset(isic_dir, 'test',  transformers=transformers)
+  def get_train_valid_and_test(isic_dir, transforms=None):
+    train_set = ISIC2017Dataset(isic_dir, 'train', transforms=transforms)
+    valid_set = ISIC2017Dataset(isic_dir, 'valid', transforms=transforms)
+    test_set  = ISIC2017Dataset(isic_dir, 'test',  transforms=transforms)
     return (train_set, valid_set, test_set)
 
 
 class ISIC2018Dataset(Dataset):
-  def __init__(self, isic_dir, split: Literal['train', 'test', 'valid'], transformers=None):
+  def __init__(self, isic_dir, split: Literal['train', 'test', 'valid'], transforms=None):
     super(ISIC2018Dataset, self).__init__()
     self.isic_dir = Path(isic_dir)
-    self.transformers = transformers
+    self.transforms = transforms
 
     if split == 'train': 
       self.images_dir = self.isic_dir / 'ISIC2018_Task1-2_Training_Input'
@@ -108,8 +107,8 @@ class ISIC2018Dataset(Dataset):
     except Exception as e:
       raise RuntimeError(f"Error loading image or mask at index {idx}: {e}")
 
-    if self.transformers:
-      img, mask = self.transformers(img, mask)
+    if self.transforms:
+      img, mask = self.transforms(img, mask)
 
     return img, mask
 
@@ -120,18 +119,18 @@ class ISIC2018Dataset(Dataset):
     return self.masks
 
   @staticmethod
-  def get_train_valid_and_test(isic_dir, transformers=None):
-    train_set = ISIC2018Dataset(isic_dir, 'train', transformers=transformers)
-    valid_set = ISIC2018Dataset(isic_dir, 'valid', transformers=transformers)
-    test_set  = ISIC2018Dataset(isic_dir, 'test', transformers=transformers)
+  def get_train_valid_and_test(isic_dir, transforms=None):
+    train_set = ISIC2018Dataset(isic_dir, 'train', transforms=transforms)
+    valid_set = ISIC2018Dataset(isic_dir, 'valid', transforms=transforms)
+    test_set  = ISIC2018Dataset(isic_dir, 'test', transforms=transforms)
     return (train_set, valid_set, test_set)
 
 
 class ISIC2019Dataset(Dataset):
-  def __init__(self, isic_dir, split: Literal['train', 'test', 'valid'], train_valid_test: List[float], transformers=None):
+  def __init__(self, isic_dir, split: Literal['train', 'test', 'valid'], train_valid_test: List[float], transforms=None):
     super(ISIC2019Dataset, self).__init__()
     self.isic_dir = Path(isic_dir)
-    self.transformers = transformers
+    self.transforms = transforms
     
     self.images_dir = self.isic_dir / 'ISIC_2019_Training_Input'
 
@@ -163,14 +162,14 @@ class ISIC2019Dataset(Dataset):
 
     image = Image.open(image_path).convert('RGB')
 
-    if self.transformers:
-      image = self.transformers(image)
+    if self.transforms:
+      image = self.transforms(image)
 
     return image, label
 
   @staticmethod
-  def get_train_valid_and_test(isic_dir, train_valid_test:List[float], transformers=None):
-    train_set = ISIC2019Dataset(isic_dir, 'train', train_valid_test, transformers=transformers)
-    valid_set = ISIC2019Dataset(isic_dir, 'valid', train_valid_test, transformers=transformers)
-    test_set  = ISIC2019Dataset(isic_dir, 'test', train_valid_test, transformers=transformers)
+  def get_train_valid_and_test(isic_dir, train_valid_test:List[float], transforms=None):
+    train_set = ISIC2019Dataset(isic_dir, 'train', train_valid_test, transforms=transforms)
+    valid_set = ISIC2019Dataset(isic_dir, 'valid', train_valid_test, transforms=transforms)
+    test_set  = ISIC2019Dataset(isic_dir, 'test', train_valid_test, transforms=transforms)
     return (train_set, valid_set, test_set)

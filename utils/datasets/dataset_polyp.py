@@ -3,17 +3,16 @@ from typing import Literal, Tuple
 import os
 from pathlib import Path
 
-from torchvision import transforms
 from PIL import Image
 import sys
 
 import logging
 
 class PolypGen2021Dataset(Dataset):
-  def __init__(self, polyp_dir, split: Literal['train', 'valid', 'test'], transformers=None, valid_ratio=0.2):
+  def __init__(self, polyp_dir, split: Literal['train', 'valid', 'test'], transforms=None, valid_ratio=0.2):
     super(PolypGen2021Dataset, self).__init__()
     self.polyp_dir = Path(polyp_dir)
-    self.transformers = transformers
+    self.transforms = transforms
     self.valid_ratio = valid_ratio
 
     if split == 'train':
@@ -66,8 +65,8 @@ class PolypGen2021Dataset(Dataset):
       img = Image.open(img_path).convert('RGB')
       mask = Image.open(mask_path).convert('L')
 
-      if self.transformers:
-        img, mask = self.transformers(img, mask)
+      if self.transforms:
+        img, mask = self.transforms(img, mask)
 
     except Exception as e:
       logging.error(f'Error loading image or mask at index {idx}: {e}')
@@ -76,8 +75,8 @@ class PolypGen2021Dataset(Dataset):
     return img, mask
   
   @staticmethod
-  def get_train_valid_and_test(polyp_dir, ratio, transformers=None):
-    train_set = PolypGen2021Dataset(polyp_dir, 'train', valid_ratio=ratio, transformers=transformers)
-    valid_set = PolypGen2021Dataset(polyp_dir, 'valid', valid_ratio=ratio, transformers=transformers)
-    test_set = PolypGen2021Dataset(polyp_dir, 'test', valid_ratio=ratio, transformers=transformers)
+  def get_train_valid_and_test(polyp_dir, valid_ratio, transforms=None):
+    train_set = PolypGen2021Dataset(polyp_dir, 'train', valid_ratio=valid_ratio, transforms=transforms)
+    valid_set = PolypGen2021Dataset(polyp_dir, 'valid', valid_ratio=valid_ratio, transforms=transforms)
+    test_set = PolypGen2021Dataset(polyp_dir, 'test', valid_ratio=valid_ratio, transforms=transforms)
     return (train_set, valid_set, test_set)

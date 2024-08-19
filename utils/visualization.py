@@ -3,6 +3,7 @@ import torch
 import numpy as np
 from typing import List, Union, Optional, Dict
 from PIL import Image
+import wandb
 from utils.metrics import metric_name_list
 
 ImageType = Union[torch.Tensor, np.ndarray, Image.Image]
@@ -59,9 +60,10 @@ def show_image_comparison(pre: ImageType, post: ImageType, mask: ImageType,
   save_image(filename) if filename else plt.show()
 
 
-def draw_metrics(metrics: dict, colors: List[str], 
+def draw_metrics(metrics: dict, 
+                 colors: List[str], 
                  title: Optional[str] = None, 
-                 selected: List[str]=metric_name_list, 
+                 selected: List[str]=['accuracy', 'mIoU', 'recall', 'precision', 'f1'], 
                  save_data: bool=True,
                  filename: Optional[str]=None):
   assert metrics is not None and len(selected) == len(colors), 'metrics must be specified for each metric type'
@@ -79,7 +81,8 @@ def draw_metrics(metrics: dict, colors: List[str],
     plt.title(title)
   
   save_image(filename) if filename else plt.show()
-
+  if save_data:
+    wandb.Image(filename)
 
 def draw_loss_graph(losses: List[float], 
                     title: Optional[str]=None, 
@@ -95,5 +98,8 @@ def draw_loss_graph(losses: List[float],
   if title is not None:
     plt.title(title)
   
+
   save_image(filename) if filename else plt.show()
+  if save_data:
+    wandb.Image(filename)
   

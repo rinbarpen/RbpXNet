@@ -5,7 +5,7 @@ from sklearn import metrics
 from typing import List, Dict
 
 # metric_name_list = ['mIoU', 'mPa', 'recall', 'precision', 'f1']
-metric_name_list = 'mIoU mPa recall precision f1'.split()
+metric_name_list = 'mIoU accuracy recall precision f1'.split()
 
 
 def precision_score(targets, preds, average, in_build=True):
@@ -37,7 +37,7 @@ def mIoU(targets, preds, n_classes: int):
   return np.mean(IoUs)
 
 
-def mPA(targets, preds, n_classes: int):
+def accuracy_score(targets, preds, n_classes: int):
   assert n_classes > 0, 'The number of classes should be greater than 0'
 
   accuracies = []
@@ -58,7 +58,7 @@ def get_metrics(targets, preds, n_classes: int, average: str):
   assert n_classes > 0, 'The number of classes should be greater than 0'
   
   return {
-    'mPA': mPA(targets, preds, n_classes),
+    'accuracy': accuracy_score(targets, preds, n_classes),
     'mIoU': mIoU(targets, preds, n_classes),
     'recall': recall_score(targets, preds, average=average),
     'precision': precision_score(targets, preds, average=average),

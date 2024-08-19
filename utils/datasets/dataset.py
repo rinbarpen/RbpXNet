@@ -79,22 +79,43 @@ def get_dataset(datasets: Union[str, List[str]],
   ])
 
 
-  if isinstance(datasets, list):
-    return HybridDataset(datasets, data_dirs, split, transformers=custom_trans)
+  # if isinstance(datasets, list):
+  #   return HybridDataset(datasets, data_dirs, split, transforms=custom_trans)
 
   dataset = datasets
   data_dir = data_dirs
 
   if dataset == 'ISIC2017':
-    return ISIC2017Dataset(data_dir, split, transformers=custom_trans)
+    return ISIC2017Dataset(data_dir, split, transforms=custom_trans)
   elif dataset == 'ISIC2018':
-    return ISIC2018Dataset(data_dir, split, transformers=custom_trans)
+    return ISIC2018Dataset(data_dir, split, transforms=custom_trans)
   elif dataset == 'ISIC2019':
-    return ISIC2019Dataset(data_dir, split, train_valid_test, transformers=default_trans)
+    return ISIC2019Dataset(data_dir, split, train_valid_test, transforms=default_trans)
   elif dataset == 'POLYPGEN':
-    return PolypGen2021Dataset(data_dir, split, valid_ratio=train_valid_test[1], transformers=custom_trans)
+    return PolypGen2021Dataset(data_dir, split, valid_ratio=train_valid_test[1], transforms=custom_trans)
   else:
     raise ValueError(f'Unsupported dataset: {dataset}')
 
+def get_train_valid_and_test(dataset_name, dataset_dir, train_valid_test: List[float], use_augment_enhance=True):
+  custom_trans = CustomTransform((512, 512), 0)
+  default_trans = transforms.Compose([
+    transforms.Resize((512, 512)),      # 调整图像大小
+    transforms.RandomHorizontalFlip(),   # 随机水平翻转
+    transforms.RandomVerticalFlip(),     # 随机垂直翻转
+    transforms.RandomRotation(0), # 随机旋转
+    transforms.ToTensor(),               # 转换为 Tensor
+    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])  # 归一化
+  ])
+
+  if dataset_name == 'ISIC2017':
+    return ISIC2017Dataset.get_train_valid_and_test(dataset_dir, transforms=custom_trans if use_augment_enhance else None)
+  elif dataset_name == 'ISIC2018':
+    return ISIC2018Dataset.get_train_valid_and_test(dataset_dir, transforms=custom_trans if use_augment_enhance else None)
+  elif dataset_name == 'ISIC2019':
+    return ISIC2019Dataset.get_train_valid_and_test(dataset_dir, train_valid_test, transforms=default_trans if use_augment_enhance else None)
+  elif dataset_name == 'POLYPGEN':
+    return PolypGen2021Dataset.get_train_valid_and_test(dataset_dir, valid_ratio=train_valid_test[1], \
+      transforms=custom_trans if use_augment_enhance else None)
+
 def support_datasets():
-  return 'ISIC2017 ISIC2018'.split()
+  return 'ISIC2017 ISIC2018 ISIC2019 POLYPGEN'.split()

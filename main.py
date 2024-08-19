@@ -1,25 +1,23 @@
 import json
+import yaml
+import wandb
 from models.unet.unet import UNet, UNetOrignal
 from multiprocessing import Process
 from threading import Thread
 from train import *
 from test import *
 from predict import *
-from utils.datasets.dataset import *
+from utils.datasets.dataset import get_train_valid_and_test
 
 import torch
 from torch import nn
 from utils.utils import *
-from utils.visualization import draw_loss_graph
+from utils.visualization import draw_loss_graph, draw_metrics
 
 from argparse import ArgumentParser
-from utils.datasets.dataset_isic import ISIC2018Dataset
-
-def Seeding():
-  torch.seed()
-  
 
 CONFIG = dict(
+  project = 'Segment for Medical AI Research',
   in_channels = 3,
   n_classes = 1,
   model = 'UNet',
@@ -35,100 +33,105 @@ CONFIG = dict(
 )
 
 def parse_args():
-  global CONFIG
-  parser = ArgumentParser
-  parser.add_argument('--gpu', default=True, help='GPU to train')
-  parser.add_argument('-m', '--model', type='str', help='Our model to train')
-  parser.add_argument('-c', '--config', type='str', help='Train configuration')
-  parser.add_argument('-b', '--batch_size', type=int, help='The number of sample loaded in one time')
-  parser.add_argument('-e', '--epochs', type=int, help='The number of training turn')
-  parser.add_argument('-lr', '--learning_rate', type=float, help='The learning rate for training model')
-  parser.add_argument('-d', '--data', type=str, help='The training and testing dataset')
-  parser.add_argument('--amp', default=False, help='Use half precision mode')
-  parser.add_argument('-h', '--help', description='Show this help message')
+  parser = ArgumentParser(description='Training Configuration')
+  parser.add_argument('-c', '--config', type=str, help='Train configuration file (JSON format)')
+
+  # Create groups
+  general_group = parser.add_argument_group('General Settings')
+  model_group = parser.add_argument_group('Model Configuration')
+  training_group = parser.add_argument_group('Training Configuration')
+
+  # Add arguments to groups
+  general_group.add_argument('--proj', type=str, help='Project Name')
+  general_group.add_argument('--entity', type=str, help='Entity Name')
+
+  model_group.add_argument('-m', '--model', type=str, help='Model to train')
+  model_group.add_argument('--in_channels', type=int, help='Number of input channels')
+  model_group.add_argument('--n_classes', type=int, help='Number of output classes')
+
+  training_group.add_argument('-b', '--batch_size', type=int, help='Number of samples loaded at one time')
+  training_group.add_argument('-e', '--epochs', type=int, help='Number of training epochs')
+  training_group.add_argument('-lr', '--learning_rate', type=float, help='Learning rate for training the model')
+  training_group.add_argument('--data_dir', type=str, help='The directory of datasets')
+  training_group.add_argument('--data', type=str, help='Training and testing dataset')
+  training_group.add_argument('--augment_boost', action='store_true', help='Use augment of data')
+  training_group.add_argument('--gpu', action='store_true', help='GPU to train')
+  training_group.add_argument('--amp', action='store_true', help='Use half precision mode')
+
+
+  args = parser.parse_args()
   
-  if parser.config:
-    CONFIG = json.load(parser.config) 
+  if not args.data_dir.endswith('/'):
+    args.data_dir += '/'
 
-  if parser.model:
-    if parser.model == '':
-      print('Error: Model is not specified.')
-      return
-    CONFIG['model'] = parser.model
-  if parser.epochs:
-    CONFIG['epochs'] = int(parser.epochs)
-  if parser.batch_size:
-    CONFIG['batch_size'] = int(parser.batch_size)
-  if parser.data:
-    CONFIG['dataset_name'] = parser.data
-  if parser.learning_rate:
-    CONFIG['learning_rate'] = float(parser.learning_rate)
-  if parser.amp:
-    CONFIG['amp'] = parser.amp
-
-  if torch.cuda.is_available:
-    CONFIG['device'] = 'cuda' if parser.gpu else 'cpu'
+  # Initialize WandB
+  if args.config:
+    ext = args.config.splitext(args.config)[1]
+    if ext in ['json']:
+      with open(args.config, 'r') as f:
+        config_data = json.load(f)
+    elif ext in ['yaml' 'yml']:
+      with open(args.config, 'r') as f:
+        config_data = yaml.safe_load(f)
+    else:
+      raise ValueError(f'Unsupported config file format: {ext}')
+    
+    wandb.init(project=args.proj, 
+               config=config_data)
   else:
-    print('Warning: No GPU found, training will be performed on CPU.')  # 若没有GPU，则使用CPU进行训练
-    logging.warn('No GPU found, training will be performed on CPU.')
-    CONFIG['device'] = 'cpu'
-    
-def select_model(model: str):
-  match model:
-    case 'UNet':
-      return UNet(CONFIG['in_channels'], CONFIG['n_classes'])
-    
-    case _:
-      raise ValueError(f'Not supported model: {model}')
+    wandb.init(project=args.proj,
+               config={
+                'model': args.model,
+                'epochs': args.epochs,
+                'batch_size': args.batch_size,
+                'learning_rate': args.learning_rate,
+                'data_dir': args.data_dir,
+                'dataset': args.data,
+                'device': 'cuda' if args.gpu and torch.cuda.is_available() else 'cpu',
+                'amp': args.amp,
+                'augment_boost': args.augment_boost,
+                'in_channels': args.in_channels,
+                'n_classes': args.n_classes,
+              })
+
+  if not torch.cuda.is_available() and args.gpu:
+    print('Warning: No GPU found, training will be performed on CPU.')
+    logging.warning('No GPU found, training will be performed on CPU.')
+  
+  return args
 
 
-def isic2018():
-  unet = UNet(CONFIG['in_channels'], CONFIG['n_classes'])
-  # R2UNet = ResUNet(CONFIG['in_channels'], CONFIG['n_classes'], 2)
-
-  isic2018_dir = f'{CONFIG["data_dir"]}ISIC2018/'
-  isic2018_train_dataset, isic2018_valid_dataset, isic2018_test_dataset = \
-    ISIC2018Dataset.get_train_valid_and_test(isic2018_dir, transformers=CustomTransform(resize=(512, 512), rotation=0))
-
-  train_losses, valid_losses = train_model(unet, device=CONFIG['device'], 
-                          train_dataset=isic2018_train_dataset, valid_dataset=isic2018_valid_dataset, 
-                          n_classes=CONFIG['n_classes'],
-                          batch_size=CONFIG['batch_size'], 
-                          epochs=CONFIG['epochs'], 
-                          lr=CONFIG['lr'],
-                          average=CONFIG['average'])
-
-  train_loss_image_path = './output/isic2018_train_loss.png'
-  valid_loss_image_path = './output/isic2018_valid_loss.png'
-  draw_loss_graph(losses=train_losses, title='Train Losses', save_data=True, 
-                  filename=train_loss_image_path)
-  draw_loss_graph(losses=valid_losses, title='Validation Losses', save_data=True, 
-                  filename=valid_loss_image_path)
-
-  metrics = test_model(UNet, device=CONFIG['device'], 
-                       test_dataset=isic2018_test_dataset, 
-                       batch_size=CONFIG['batch_size'], 
-                       n_classes=CONFIG['n_classes'],
-                       average=CONFIG['average'])
-  draw_metrics(metrics, colors='red green blue yellow purple'.split(), save_data=True, filename='output/UNet/metrics.png')
+def select_model(model: str, *args, **kwargs):
+  if model == 'UNet':
+    return UNet(kwargs['in_channels'], kwargs['n_classes'])
+  elif model == 'UNet++':
+    pass
+  else: 
+    raise ValueError(f'Not supported model: {model}')
 
 
 def main():  
-  unet = UNetOrignal(CONFIG['in_channels'], CONFIG['n_classes'])
-  # R2UNet = unet.ResUNet(CONFIG['in_channels'], CONFIG['n_classes'], 2)
-  transforms = CustomTransform(resize=(512, 512), rotation=0)
-
-  isic2017_dir = f'{CONFIG["data_dir"]}ISIC2017/'
-  ISIC2017_train_dataset, ISIC2017_valid_dataset, ISIC2017_test_dataset = \
-    ISIC2017Dataset.get_train_valid_and_test(isic2017_dir, transforms)
+  _ = parse_args()
+  # wandb.log({'env': args})
   
-  train_losses, valid_losses = train_model(unet, device=CONFIG['device'], 
-                          train_dataset=ISIC2017_train_dataset, valid_dataset=ISIC2017_valid_dataset, 
-                          n_classes=CONFIG['n_classes'],
-                          batch_size=CONFIG['batch_size'], 
-                          epochs=CONFIG['epochs'], 
-                          lr=CONFIG['lr'],
-                          average=CONFIG['average'])
+  net = select_model(wandb.config.model, in_channels=wandb.config.in_channels, n_classes=wandb.config.n_classes)
+
+  dataset_dir = wandb.config.data_dir + wandb.config.dataset
+  train_dataset, valid_dataset, test_dataset = \
+    get_train_valid_and_test(wandb.config.dataset, dataset_dir,
+                             train_valid_test=[0.7, 0.2, 0.1], 
+                             use_augment_enhance=wandb.config.augment_boost)
+  
+  train_losses, valid_losses = \
+    train_model(net, 
+                device=wandb.config.device, 
+                train_dataset=train_dataset, 
+                valid_dataset=valid_dataset, 
+                n_classes=wandb.config.n_classes,
+                batch_size=wandb.config.batch_size, 
+                epochs=wandb.config.epochs, 
+                lr=wandb.config.learning_rate,
+                average='weighted')
 
   train_loss_image_path = './output/train_loss.png'
   valid_loss_image_path = './output/valid_loss.png'
@@ -137,11 +140,18 @@ def main():
   draw_loss_graph(losses=valid_losses, title='Validation Losses', save_data=True, 
                   filename=valid_loss_image_path)
 
-  metrics = test_model(UNet, device=CONFIG['device'], 
-                       test_dataset=ISIC2017_test_dataset, 
-                       batch_size=CONFIG['batch_size'], 
-                       n_classes=CONFIG['n_classes'],
-                       average=CONFIG['average'])
-  draw_metrics(metrics, colors='red green blue yellow purple'.split(), save_data=True, filename='output/UNet/metrics.png')
+  wandb.log({'train_losses': train_losses, 'valid_losses': valid_losses, 'train_loss_image': train_loss_image_path, 'valid_loss_image': valid_loss_image_path})
+
+  metrics = test_model(net, 
+                       device=wandb.config.device, 
+                       test_dataset=test_dataset, 
+                       batch_size=wandb.config.batch_size, 
+                       n_classes=wandb.config.n_classes,
+                       average='weighted')
+  test_loss_image_path = './output/UNet/metrics.png'
+  colors = 'red green blue yellow purple'.split()
+  draw_metrics(metrics, title='Metrics', colors=colors, save_data=True, filename=test_loss_image_path)
+  wandb.log({'metrics': metrics, 'metrics_image': test_loss_image_path})
+
 
 main()
