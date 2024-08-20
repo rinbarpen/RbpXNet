@@ -8,7 +8,6 @@ from PIL import Image
 import sys
 
 
-
 class ISIC2017Dataset(Dataset):
   def __init__(self, isic_dir, split: Literal['train', 'test', 'valid'], transforms=None):
     super(ISIC2017Dataset, self).__init__()
@@ -49,15 +48,9 @@ class ISIC2017Dataset(Dataset):
       raise RuntimeError(f"Error loading image or mask at index {idx}: {e}")
 
     if self.transforms:
-      img, mask = self.transforms(img, mask)
+      img, mask = self.transforms[0](img), self.transforms[1](mask)
 
     return img, mask
-
-  def get_images(self):
-    return self.images
-  
-  def get_masks(self):
-    return self.masks
 
   @staticmethod
   def get_train_valid_and_test(isic_dir, transforms=None):
@@ -108,15 +101,9 @@ class ISIC2018Dataset(Dataset):
       raise RuntimeError(f"Error loading image or mask at index {idx}: {e}")
 
     if self.transforms:
-      img, mask = self.transforms(img, mask)
+      img, mask = self.transforms[0](img), self.transforms[1](mask)
 
     return img, mask
-
-  def get_images(self):
-    return self.images
-  
-  def get_masks(self):
-    return self.masks
 
   @staticmethod
   def get_train_valid_and_test(isic_dir, transforms=None):

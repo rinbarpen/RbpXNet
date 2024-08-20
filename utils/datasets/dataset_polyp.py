@@ -9,7 +9,7 @@ import sys
 import logging
 
 class PolypGen2021Dataset(Dataset):
-  def __init__(self, polyp_dir, split: Literal['train', 'valid', 'test'], transforms=None, valid_ratio=0.2):
+  def __init__(self, polyp_dir, split: Literal['train', 'valid', 'test'], valid_ratio=0.2, transforms=None):
     super(PolypGen2021Dataset, self).__init__()
     self.polyp_dir = Path(polyp_dir)
     self.transforms = transforms
@@ -66,7 +66,7 @@ class PolypGen2021Dataset(Dataset):
       mask = Image.open(mask_path).convert('L')
 
       if self.transforms:
-        img, mask = self.transforms(img, mask)
+        img, mask = self.transforms[0](img), self.transforms[1](mask)
 
     except Exception as e:
       logging.error(f'Error loading image or mask at index {idx}: {e}')

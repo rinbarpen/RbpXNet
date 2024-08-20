@@ -11,10 +11,10 @@ import sys
 import logging
 
 class Bowl2018Dataset(Dataset):
-  def __init__(self, bowl_dir, split: Literal['train', 'valid', 'test'], train_valid_test: List[float], transformers=None):
+  def __init__(self, bowl_dir, split: Literal['train', 'valid', 'test'], train_valid_test: List[float], transforms=None):
     super(Bowl2018Dataset, self).__init__()
     self.bowl_dir = Path(bowl_dir)
-    self.transformers = transformers
+    self.transforms = transforms
 
     self.images_dir = self.bowl_dir / 'stage1_train'
     if split == 'train':
@@ -57,8 +57,9 @@ class Bowl2018Dataset(Dataset):
       img = Image.open(image_path).convert('RGB')
       masks = [Image.open(mask_path).convert('L') for mask_path in mask_paths]
 
-      if self.transformers:
-        img, masks = self.transformers(img, masks)
+      if self.transforms:
+        img = self.transforms[0](img)
+        masks = [self.transforms[1](mask) for mask in masks]
 
     except Exception as e:
       logging.error(f'Error loading image or mask at index {idx}: {e}')
@@ -67,8 +68,8 @@ class Bowl2018Dataset(Dataset):
     return img, masks
   
   @staticmethod
-  def get_train_valid_and_test(bowl_dir, train_valid_test: List[float], transformers=None):
-    train_set = Bowl2018Dataset(bowl_dir, 'train', train_valid_test, transformers=transformers)
-    valid_set = Bowl2018Dataset(bowl_dir, 'valid', train_valid_test, transformers=transformers)
-    test_set  = Bowl2018Dataset(bowl_dir, 'test',  train_valid_test, transformers=transformers)
+  def get_train_valid_and_test(bowl_dir, train_valid_test: List[float], transforms=None):
+    train_set = Bowl2018Dataset(bowl_dir, 'train', train_valid_test, transforms=transforms)
+    valid_set = Bowl2018Dataset(bowl_dir, 'valid', train_valid_test, transforms=transforms)
+    test_set  = Bowl2018Dataset(bowl_dir, 'test',  train_valid_test, transforms=transforms)
     return (train_set, valid_set, test_set)

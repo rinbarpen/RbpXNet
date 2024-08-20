@@ -32,6 +32,8 @@ def test_model(model, device,
         
         outputs = model(inputs)
         
+        labels = (labels * 256).type(dtype=torch.int8)
+        outputs = (outputs * 256).type(dtype=torch.int8)
         metrics.append(
           get_metrics(
             outputs.cpu().detach().numpy(), 

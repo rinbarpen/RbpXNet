@@ -9,14 +9,20 @@ metric_name_list = 'mIoU accuracy recall precision f1'.split()
 
 
 def precision_score(targets, preds, average, in_build=True):
+  targets = targets.reshape(-1)
+  preds = preds.reshape(-1)
   return metrics.precision_score(targets, preds, average=average)
 
 
 def recall_score(targets, preds, average, in_build=True):
+  targets = targets.reshape(-1)
+  preds = preds.reshape(-1)
   return metrics.recall_score(targets, preds, average=average)
 
 
 def f1_score(targets, preds, average, in_build=True):
+  targets = targets.reshape(-1)
+  preds = preds.reshape(-1)
   return metrics.f1_score(targets, preds, average=average)
 
 
