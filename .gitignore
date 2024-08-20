@@ -1,8 +1,9 @@
 .vscode/*
 output/*
 **/__pycache__/*
-tests/__pycache__/**
-utils/__pycache__/**
+tests/__pycache__/*
+utils/__pycache__/*
+utils/datasets/__pycache__/*
 *.pyc
 *.png
 wandb/*
