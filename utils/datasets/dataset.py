@@ -15,13 +15,23 @@ def get_train_valid_and_test(dataset_name, dataset_dir, train_valid_test: List[f
   boost_transform_group = (
     Transforms.TransformBuilder(resize)
     .rotation(0.0)
+    .horizon_flip()
+    .vertical_flip()
+    .tensorize()
+    .normalize()
     .build(), 
     Transforms.TransformBuilder(resize)
+    .rotation(0.0)
+    .horizon_flip()
+    .vertical_flip()
+    .tensorize()
     .build())
   default_transform_group = (
     Transforms.TransformBuilder(resize)
+    .tensorize()
     .build(), 
     Transforms.TransformBuilder(resize)
+    .tensorize()
     .build())
 
   select_transform_group = boost_transform_group if use_augment_enhance else default_transform_group
