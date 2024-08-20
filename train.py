@@ -20,8 +20,9 @@ def train_one_epoch(model, device, epoch, train_loader, optimizer, criterion):
       inputs, labels = inputs.to(device), labels.to(device)
       outputs = model(inputs)
       loss = criterion(outputs, labels)
-
       loss.backward()
+      
+      optimizer.step()
       train_loss += loss.item()
       
       pbar.update()
@@ -58,7 +59,8 @@ def train_model(model, device,
   ) if valid_dataset is not None else None  
 
   optimizer = optim.Adam(model.parameters(), lr=lr, betas=(0.9, 0.999), weight_decay=weight_decay)
-  criterion = nn.CrossEntropyLoss()
+  # criterion = nn.CrossEntropyLoss()
+  criterion = nn.BCEWithLogitsLoss()
 
   best_val_loss = float('inf')
   saved_model_filename = './output/best_model.pth'
@@ -81,7 +83,6 @@ def train_model(model, device,
     if val_loss < best_val_loss:
       best_val_loss = val_loss
       torch.save(model.state_dict(), saved_model_filename)
-      wandb.log(f'save model to {saved_model_filename} when epoch={epoch}, loss={val_loss}')
       logging.info(f'save model to {saved_model_filename} when epoch={epoch}, loss={val_loss}')
 
   return train_losses, valid_losses 

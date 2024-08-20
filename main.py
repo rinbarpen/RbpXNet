@@ -44,6 +44,7 @@ def parse_args():
   # Add arguments to groups
   general_group.add_argument('--proj', type=str, help='Project Name')
   general_group.add_argument('--entity', type=str, help='Entity Name')
+  general_group.add_argument('--test', action='store_true', help='Test the model')
 
   model_group.add_argument('-m', '--model', type=str, help='Model to train')
   model_group.add_argument('--in_channels', type=int, help='Number of input channels')
@@ -92,6 +93,7 @@ def parse_args():
                 'augment_boost': args.augment_boost,
                 'in_channels': args.in_channels,
                 'n_classes': args.n_classes,
+                'test': args.test,
               })
 
   if not torch.cuda.is_available() and args.gpu:
@@ -110,10 +112,26 @@ def select_model(model: str, *args, **kwargs):
     raise ValueError(f'Not supported model: {model}')
 
 
-def main():  
-  _ = parse_args()
-  # wandb.log({'env': args})
+def test():
+  net = select_model(wandb.config.model, in_channels=wandb.config.in_channels, n_classes=wandb.config.n_classes)
+  dataset_dir = wandb.config.data_dir + wandb.config.dataset
+  train_dataset, valid_dataset, test_dataset = \
+    get_train_valid_and_test(wandb.config.dataset, dataset_dir,
+                             train_valid_test=[0.7, 0.2, 0.1], 
+                             use_augment_enhance=wandb.config.augment_boost)
   
+  metrics = test_model(net, 
+                       device=wandb.config.device, 
+                       test_dataset=test_dataset, 
+                       batch_size=wandb.config.batch_size, 
+                       n_classes=wandb.config.n_classes,
+                       average='weighted')
+  test_loss_image_path = './output/UNet/metrics.png'
+  colors = 'red green blue yellow purple'.split()
+  draw_metrics(metrics, title='Metrics', colors=colors, save_data=True, filename=test_loss_image_path)
+  wandb.log({'metrics': metrics, 'metrics_image': test_loss_image_path})
+
+def train():
   net = select_model(wandb.config.model, in_channels=wandb.config.in_channels, n_classes=wandb.config.n_classes)
 
   dataset_dir = wandb.config.data_dir + wandb.config.dataset
@@ -142,16 +160,24 @@ def main():
 
   wandb.log({'train_losses': train_losses, 'valid_losses': valid_losses, 'train_loss_image': train_loss_image_path, 'valid_loss_image': valid_loss_image_path})
 
-  metrics = test_model(net, 
-                       device=wandb.config.device, 
-                       test_dataset=test_dataset, 
-                       batch_size=wandb.config.batch_size, 
-                       n_classes=wandb.config.n_classes,
-                       average='weighted')
-  test_loss_image_path = './output/UNet/metrics.png'
-  colors = 'red green blue yellow purple'.split()
-  draw_metrics(metrics, title='Metrics', colors=colors, save_data=True, filename=test_loss_image_path)
-  wandb.log({'metrics': metrics, 'metrics_image': test_loss_image_path})
+
+def predict():
+  pass
+
+def main():  
+  _ = parse_args()
+  
+  # if _.predict:
+  #   predict()
+  #   return 
+  
+  if _.test:
+    test()
+    return
+  
+  train()
+  test()
+
 
 
 main()

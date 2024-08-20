@@ -11,7 +11,7 @@ def valid_one_epoch(model, device, epoch, valid_loader, criterion, n_classes, av
   with tqdm(total=len(valid_loader), desc=f'Validating') as pbar:
     with torch.no_grad():
       for inputs, labels in valid_loader:
-        # inputs, labels = inputs.to(device), labels.to(device)
+        inputs, labels = inputs.to(device), labels.to(device)
         
         outputs = model(inputs)
         loss = criterion(outputs, labels)
