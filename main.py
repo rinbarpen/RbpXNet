@@ -16,22 +16,6 @@ from utils.visualization import draw_loss_graph, draw_metrics
 
 from argparse import ArgumentParser
 
-CONFIG = dict(
-  project = 'Segment for Medical AI Research',
-  in_channels = 3,
-  n_classes = 1,
-  model = 'UNet',
-  epochs = 10,
-  batch_size = 10,
-  lr = 1e-2,
-  device = 'cuda' if torch.cuda.is_available else 'cpu',
-  amp = True, 
-  data_dir = 'I:/AI/Data/',
-  output_dir = './output/',
-  dataset_name = 'ISIC2017',
-  average='weighted',
-)
-
 def parse_args():
   parser = ArgumentParser(description='Training Configuration')
   parser.add_argument('-c', '--config', type=str, help='Train configuration file (JSON format)')
