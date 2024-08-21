@@ -1,7 +1,7 @@
 import json
 import yaml
 import wandb
-from models.unet.unet import UNet, UNetOrignal
+from models.unet.unet import UNet, UNetOriginal
 from multiprocessing import Process
 from threading import Thread
 from train import *
@@ -15,6 +15,7 @@ from utils.utils import *
 from utils.visualization import draw_loss_graph, draw_metrics
 
 from argparse import ArgumentParser
+from utils.writer import CSVWriter
 
 def parse_args():
   parser = ArgumentParser(description='Training Configuration')
@@ -71,7 +72,7 @@ def parse_args():
                 'batch_size': args.batch_size,
                 'learning_rate': args.learning_rate,
                 'data_dir': args.data_dir,
-                'dataset': args.data,
+                'dataset': args.dataset,
                 'device': 'cuda' if args.gpu and torch.cuda.is_available() else 'cpu',
                 'amp': args.amp,
                 'augment_boost': args.augment_boost,
@@ -106,6 +107,9 @@ def test(net, test_dataset):
   
   test_loss_image_path = './output/metrics.png'
 
+  writer = CSVWriter('output/test.csv')
+  writer.write_headers(['mIoU', 'accuracy', 'f1']).write('mIoU', metrics['mIoU']).write('accuracy', metrics['accuracy']).write('f1', metrics['f1'])
+
   create_file_path_or_not(test_loss_image_path)
 
   colors = 'red green blue yellow purple'.split()
@@ -123,6 +127,11 @@ def train(net, train_dataset, valid_dataset):
                 epochs=wandb.config.epochs, 
                 lr=wandb.config.learning_rate,
                 average='macro')
+
+  writer = CSVWriter('output/train.csv')
+  writer.write_headers(['loss']).write('loss', train_losses)
+  writer = CSVWriter('output/valid.csv')
+  writer.write_headers(['loss']).write('loss', valid_losses)
 
   train_loss_image_path = './output/train_loss.png'
   valid_loss_image_path = './output/valid_loss.png'

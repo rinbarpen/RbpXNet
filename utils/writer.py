@@ -1,5 +1,4 @@
 import torch
-import csv
 import numpy as np
 from typing import Union, List, Any
 import pandas as pd
@@ -11,13 +10,10 @@ class CSVWriter:
 
   def get_headers(self):
     try:
-      with open(self.filename, 'r') as f:
-        reader = csv.reader(f)
-        headers = next(reader)
+      return self.df[0]
     except (IOError, OSError) as e:
       print(f"Error reading CSV file: {e}")
-      headers = []
-    return headers
+    return []
 
   def write(self, header: str, data: Union[np.ndarray, torch.Tensor, List[Any]]):
     try:
@@ -30,12 +26,9 @@ class CSVWriter:
       print(f"Error writing to CSV file: {e}")
     return self
 
-  def write_header(self, data: List[str]):
+  def write_headers(self, headers: List[str]):
     try:
-      self.df[0] = data
-      # with open(self.filename, 'w', newline='\n') as f:
-      #   writer = csv.writer(f)
-      #   writer.writerow(data)
+      self.df[0] = headers
     except (IOError, OSError) as e:
       print(f"Error writing header to CSV file: {e}")
     return self
