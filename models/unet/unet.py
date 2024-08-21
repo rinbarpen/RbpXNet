@@ -5,9 +5,9 @@ import numpy as np
 from .part import *
 
 
-class UNetOrignal(nn.Module):
+class UNetOriginal(nn.Module):
   def __init__(self, n_channels, n_classes, use_bilinear=False):
-    super(UNetOrignal, self).__init__()
+    super(UNetOriginal, self).__init__()
     self.n_channels = n_channels
     self.n_classes = n_classes
     self.use_bilinear = use_bilinear
@@ -50,8 +50,7 @@ class UNet(nn.Module):
 
     factor = 2 if use_bilinear else 1
     self.down_list = nn.ModuleList([
-      *[Down(features[i], features[i + 1]) for i in range(len(features) - 2)],
-      Down(features[len(features) - 2], features[len(features) - 1])
+      *[Down(features[i], features[i + 1]) for i in range(len(features) - 1)],
     ])
     self.up_list = nn.ModuleList([
       *[Up(features[i + 1], features[i] // factor, use_bilinear) for i in range(len(features) - 2, 0, -1)],

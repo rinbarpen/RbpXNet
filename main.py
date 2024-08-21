@@ -38,7 +38,7 @@ def parse_args():
   training_group.add_argument('-e', '--epochs', type=int, help='Number of training epochs')
   training_group.add_argument('-lr', '--learning_rate', type=float, help='Learning rate for training the model')
   training_group.add_argument('--data_dir', type=str, help='The directory of datasets')
-  training_group.add_argument('--data', type=str, help='Training and testing dataset')
+  training_group.add_argument('--dataset', type=str, help='Training and testing dataset')
   training_group.add_argument('--augment_boost', action='store_true', help='Use augment of data')
   training_group.add_argument('--gpu', action='store_true', help='GPU to train')
   training_group.add_argument('--amp', action='store_true', help='Use half precision mode')
@@ -60,7 +60,7 @@ def parse_args():
         config_data = yaml.safe_load(f)
     else:
       raise ValueError(f'Unsupported config file format: {ext}')
-    
+  
     wandb.init(project=args.proj, 
                config=config_data)
   else:
@@ -96,34 +96,23 @@ def select_model(model: str, *args, **kwargs):
     raise ValueError(f'Not supported model: {model}')
 
 
-def test():
-  net = select_model(wandb.config.model, in_channels=wandb.config.in_channels, n_classes=wandb.config.n_classes)
-  dataset_dir = wandb.config.data_dir + wandb.config.dataset
-  train_dataset, valid_dataset, test_dataset = \
-    get_train_valid_and_test(wandb.config.dataset, dataset_dir,
-                             train_valid_test=[0.7, 0.2, 0.1], 
-                             use_augment_enhance=wandb.config.augment_boost)
-  
+def test(net, test_dataset):  
   metrics = test_model(net, 
                        device=wandb.config.device, 
                        test_dataset=test_dataset, 
                        batch_size=wandb.config.batch_size, 
                        n_classes=wandb.config.n_classes,
-                       average='weighted')
-  test_loss_image_path = './output/UNet/metrics.png'
+                       average='macro')
+  
+  test_loss_image_path = './output/metrics.png'
+
+  create_file_path_or_not(test_loss_image_path)
+
   colors = 'red green blue yellow purple'.split()
   draw_metrics(metrics, title='Metrics', colors=colors, save_data=True, filename=test_loss_image_path)
   wandb.log({'metrics': metrics, 'metrics_image': test_loss_image_path})
 
-def train():
-  net = select_model(wandb.config.model, in_channels=wandb.config.in_channels, n_classes=wandb.config.n_classes)
-
-  dataset_dir = wandb.config.data_dir + wandb.config.dataset
-  train_dataset, valid_dataset, test_dataset = \
-    get_train_valid_and_test(wandb.config.dataset, dataset_dir,
-                             train_valid_test=[0.7, 0.2, 0.1], 
-                             use_augment_enhance=wandb.config.augment_boost)
-  
+def train(net, train_dataset, valid_dataset):  
   train_losses, valid_losses = \
     train_model(net, 
                 device=wandb.config.device, 
@@ -133,10 +122,14 @@ def train():
                 batch_size=wandb.config.batch_size, 
                 epochs=wandb.config.epochs, 
                 lr=wandb.config.learning_rate,
-                average='weighted')
+                average='macro')
 
   train_loss_image_path = './output/train_loss.png'
   valid_loss_image_path = './output/valid_loss.png'
+  
+  create_file_path_or_not(train_loss_image_path)
+  create_file_path_or_not(valid_loss_image_path)
+
   draw_loss_graph(losses=train_losses, title='Train Losses', save_data=True, 
                   filename=train_loss_image_path)
   draw_loss_graph(losses=valid_losses, title='Validation Losses', save_data=True, 
@@ -151,16 +144,24 @@ def predict():
 def main():  
   _ = parse_args()
   
+  net = select_model(wandb.config.model, in_channels=wandb.config.in_channels, n_classes=wandb.config.n_classes)
+
+  dataset_dir = wandb.config.data_dir + wandb.config.dataset
+  train_dataset, valid_dataset, test_dataset = \
+    get_train_valid_and_test(wandb.config.dataset, dataset_dir,
+                             train_valid_test=[0.7, 0.2, 0.1], 
+                             use_augment_enhance=wandb.config.augment_boost)
+
   # if _.predict:
   #   predict()
   #   return 
-  
+
   if _.test:
-    test()
+    test(net, test_dataset)
     return
   
-  train()
-  test()
+  train(net, train_dataset, valid_dataset)
+  test(net, test_dataset)
 
 
 

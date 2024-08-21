@@ -2,8 +2,9 @@ import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from utils.datasets.dataset_isic import *
-# from utils.datasets.dataset_drive import * 
-from utils.datasets.dataset_polyp import PolypGen2021Dataset
+from utils.datasets.dataset_drive import * 
+from utils.datasets.dataset_bowl import * 
+from utils.datasets.dataset_polyp import *
 
 from typing import Literal, List, Union
 
@@ -48,9 +49,17 @@ def get_train_valid_and_test(dataset_name, dataset_dir, train_valid_test: List[f
     return ISIC2019Dataset.get_train_valid_and_test(
       dataset_dir, train_valid_test, 
       transforms=select_transform_group)
-  elif dataset_name == 'POLYPGEN':
+  elif dataset_name == 'POLYPGEN2021':
     return PolypGen2021Dataset.get_train_valid_and_test(
       dataset_dir, valid_ratio=train_valid_test[1],
+      transforms=select_transform_group)
+  elif dataset_name == 'BOWL2018':
+    return Bowl2018Dataset.get_train_valid_and_test(
+      dataset_dir, train_valid_test,
+      transforms=select_transform_group)
+  elif dataset_name == 'DRIVE':
+    return DriveDataset.get_train_valid_and_test(
+      dataset_dir, train_valid_test,
       transforms=select_transform_group)
 
 def support_datasets():

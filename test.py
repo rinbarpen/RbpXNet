@@ -9,7 +9,7 @@ from typing import *
 def test_model(model, device, 
   test_dataset, batch_size: int, 
   n_classes: int, num_workers: int=0, 
-  average: str='weighted'):  
+  average: str='marco'):  
   assert n_classes > 0, 'n_classes must be greater than 0'
   assert batch_size > 0, 'batch_size must be greater than 0'
   

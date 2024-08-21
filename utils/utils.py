@@ -15,6 +15,11 @@ def create_file(filepath):
     with open(filepath, 'w') as f:
       pass
 
+def create_file_path_or_not(filepath):
+  dirpath = os.path.dirname(filepath)
+  if not os.path.exists(dirpath):
+    os.makedirs(dirpath)
+
 def save_model(model, path):
   try:
     torch.save(model.state_dict(), path)
