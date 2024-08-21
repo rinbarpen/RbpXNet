@@ -15,7 +15,7 @@ def valid_one_epoch(model, device, epoch, valid_loader, criterion, n_classes, av
         
         outputs = model(inputs)
         loss = criterion(outputs, labels)
-        val_loss += loss.item() * inputs.size(0)
+        val_loss += loss.item()
 
         pbar.update()
         pbar.set_postfix(**{'loss(batch)': loss.item()})

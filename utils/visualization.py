@@ -70,9 +70,8 @@ def draw_metrics(metrics: dict,
   
   plt.figure()
   
-  metric_show = dict()
-  for name in selected:
-    metric_show[name] = metrics.get(name) 
+  metric_show = dict(filter(lambda item: item[0] in selected, metrics.items()))
+  print(metric_show)
   
   plt.ylim([0, 1])
   plt.bar(metric_show.keys(), height=metric_show.values(), color=colors)
