@@ -90,6 +90,7 @@ def parse_args():
 def select_model(model: str, *args, **kwargs):
   if model == 'UNet':
     return UNet(kwargs['in_channels'], kwargs['n_classes'])
+    # return UNetOrignal(kwargs['in_channels'], kwargs['n_classes'])
   elif model == 'UNet++':
     pass
   else: 
@@ -109,8 +110,8 @@ def test():
                        test_dataset=test_dataset, 
                        batch_size=wandb.config.batch_size, 
                        n_classes=wandb.config.n_classes,
-                       average='weighted')
-  test_loss_image_path = './output/UNet/metrics.png'
+                       average='macro')
+  test_loss_image_path = './output/metrics.png'
   colors = 'red green blue yellow purple'.split()
   draw_metrics(metrics, title='Metrics', colors=colors, save_data=True, filename=test_loss_image_path)
   wandb.log({'metrics': metrics, 'metrics_image': test_loss_image_path})

@@ -50,8 +50,7 @@ class UNet(nn.Module):
 
     factor = 2 if use_bilinear else 1
     self.down_list = nn.ModuleList([
-      *[Down(features[i], features[i + 1]) for i in range(len(features) - 2)],
-      Down(features[len(features) - 2], features[len(features) - 1])
+      Down(features[i], features[i + 1]) for i in range(len(features) - 1)
     ])
     self.up_list = nn.ModuleList([
       *[Up(features[i + 1], features[i] // factor, use_bilinear) for i in range(len(features) - 2, 0, -1)],

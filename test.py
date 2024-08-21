@@ -25,7 +25,7 @@ def test_model(model, device,
   
   n_step = len(test_loader)
   metrics = []
-  with tqdm(total=n_step, desc=f'Testing'):
+  with tqdm(total=n_step, desc=f'Testing') as pbar:
     with torch.no_grad():
       for inputs, labels in test_loader:
         inputs, labels = inputs.to(device), labels.to(device)
@@ -34,12 +34,16 @@ def test_model(model, device,
         
         labels = (labels * 256).type(dtype=torch.int8)
         outputs = (outputs * 256).type(dtype=torch.int8)
-        metrics.append(
-          get_metrics(
-            outputs.cpu().detach().numpy(), 
-            labels.cpu().detach().numpy(), 
-            n_classes=n_classes, 
-            average=average
-          )) 
+        metric = get_metrics(
+          outputs.cpu().detach().numpy(), 
+          labels.cpu().detach().numpy(), 
+          n_classes=n_classes, 
+          average=average,
+          selected=['mIoU', 'accuracy', 'f1']
+        )
+        metrics.append(metric)
+        
+        pbar.update()
+        pbar.set_postfix(**{'metrics(batch)': repr(metric)})
   
   return calculate_average_metrics(metrics)
