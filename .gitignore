@@ -7,3 +7,11 @@ utils/datasets/__pycache__/*
 *.pyc
 *.png
 wandb/*
+utils/__pycache__/metrics.cpython-310.pyc
+utils/__pycache__/utils.cpython-310.pyc
+utils/datasets/__pycache__/dataset_drive.cpython-310.pyc
+utils/datasets/__pycache__/dataset_isic.cpython-310.pyc
+utils/datasets/__pycache__/dataset_polyp.cpython-310.pyc
+utils/datasets/__pycache__/dataset.cpython-310.pyc
+tests/__pycache__/test_dataset.cpython-310.pyc
+tests/__pycache__/test_metrics.cpython-310.pyc

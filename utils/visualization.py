@@ -97,7 +97,6 @@ def draw_loss_graph(losses: List[float],
   if title is not None:
     plt.title(title)
   
-
   save_image(filename) if filename else plt.show()
   if save_data:
     wandb.Image(filename)

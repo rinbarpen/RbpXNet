@@ -1,7 +1,7 @@
 import json
 import yaml
 import wandb
-from models.unet.unet import UNet, UNetOriginal
+from models.unet.unet import UNet, UNetOrignal
 from multiprocessing import Process
 from threading import Thread
 from train import *
@@ -90,7 +90,6 @@ def parse_args():
 def select_model(model: str, *args, **kwargs):
   if model == 'UNet':
     return UNet(kwargs['in_channels'], kwargs['n_classes'])
-    # return UNetOrignal(kwargs['in_channels'], kwargs['n_classes'])
   elif model == 'UNet++':
     pass
   else: 
@@ -104,6 +103,7 @@ def test(net, test_dataset):
                        batch_size=wandb.config.batch_size, 
                        n_classes=wandb.config.n_classes,
                        average='macro')
+  
   test_loss_image_path = './output/metrics.png'
 
   create_file_path_or_not(test_loss_image_path)
