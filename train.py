@@ -40,8 +40,7 @@ def train_model(model, device,
                 n_classes: int,
                 num_workers: int=0, 
                 weight_decay: float=0.1,
-                average: str='weighted',
-                valid_per_n_epoch: int=1):  
+                average: str='marco'):  
   model.to(device)
   train_loader = DataLoader(
     dataset=train_dataset,
@@ -59,11 +58,9 @@ def train_model(model, device,
   ) if valid_dataset is not None else None  
 
   optimizer = optim.Adam(model.parameters(), lr=lr, betas=(0.9, 0.999), weight_decay=weight_decay)
-  # criterion = nn.CrossEntropyLoss()
-  criterion = nn.BCEWithLogitsLoss()
+  criterion = nn.BCEWithLogitsLoss() if wandb.config.n_classes == 1 else nn.CrossEntropyLoss()
 
   best_val_loss = float('inf')
-  saved_model_filename = './output/best_model.pth'
 
   train_losses = []
   valid_losses = []
@@ -79,10 +76,15 @@ def train_model(model, device,
 
     train_losses.append(train_loss)
     valid_losses.append(val_loss)
-
-    if val_loss < best_val_loss:
-      best_val_loss = val_loss
+    
+    if wandb.config.save_n_epoch % (epoch+1) == 0:
+      saved_model_filename = \
+        f'./output/models/{wandb.config.model}-{epoch+1}of{wandb.config.epochs}-{wandb.config.dataset}.pth'
       torch.save(model.state_dict(), saved_model_filename)
       logging.info(f'save model to {saved_model_filename} when epoch={epoch}, loss={val_loss}')
+    if val_loss < best_val_loss:
+      best_val_loss = val_loss
+      torch.save(model.state_dict(), './output/best_model.pth')
+      logging.info(f'save model to best_model.pth when epoch={epoch}, loss={val_loss}')
 
   return train_losses, valid_losses 

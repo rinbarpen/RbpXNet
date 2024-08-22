@@ -1,6 +1,6 @@
 import torch
 
-def predict(model, input):
+def predict_one(model, input):
   model.eval()
   with torch.no_grad():
     predicts = model(input)

@@ -66,7 +66,7 @@ def draw_metrics(metrics: dict,
                  selected: List[str]=['accuracy', 'mIoU', 'recall', 'precision', 'f1'], 
                  save_data: bool=True,
                  filename: Optional[str]=None):
-  assert metrics is not None and len(selected) == len(colors), 'metrics must be specified for each metric type'
+  assert metrics is not None and len(selected) <= len(colors), 'metrics must be specified for metric type'
   
   plt.figure()
   
@@ -74,7 +74,7 @@ def draw_metrics(metrics: dict,
   print(metric_show)
   
   plt.ylim([0, 1])
-  plt.bar(metric_show.keys(), height=metric_show.values(), color=colors)
+  plt.bar(metric_show.keys(), height=metric_show.values(), color=colors[:len(selected)])
   
   if title is not None:
     plt.title(title)

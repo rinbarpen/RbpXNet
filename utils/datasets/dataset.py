@@ -59,7 +59,7 @@ def get_train_valid_and_test(dataset_name, dataset_dir, train_valid_test: List[f
       transforms=select_transform_group)
   elif dataset_name == 'DRIVE':
     return DriveDataset.get_train_valid_and_test(
-      dataset_dir, train_valid_test,
+      dataset_dir, train_valid_test[1],
       transforms=select_transform_group)
 
 def support_datasets():

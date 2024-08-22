@@ -25,11 +25,13 @@ def parse_args():
   general_group = parser.add_argument_group('General Settings')
   model_group = parser.add_argument_group('Model Configuration')
   training_group = parser.add_argument_group('Training Configuration')
+  predict_group = parser.add_argument_group('Predict Configuration')
 
   # Add arguments to groups
   general_group.add_argument('--proj', type=str, help='Project Name')
   general_group.add_argument('--entity', type=str, help='Entity Name')
   general_group.add_argument('--test', action='store_true', help='Test the model')
+  general_group.add_argument('--predict', action='store_true', help='Predict the model')
 
   model_group.add_argument('-m', '--model', type=str, help='Model to train')
   model_group.add_argument('--in_channels', type=int, help='Number of input channels')
@@ -43,12 +45,18 @@ def parse_args():
   training_group.add_argument('--augment_boost', action='store_true', help='Use augment of data')
   training_group.add_argument('--gpu', action='store_true', help='GPU to train')
   training_group.add_argument('--amp', action='store_true', help='Use half precision mode')
+  training_group.add_argument('--save_n_epoch', type=int, default=1, help='Use half precision mode')
 
+  predict_group.add_argument('--input', type=str, help='The input data to predict')
 
   args = parser.parse_args()
   
   if not args.data_dir.endswith('/'):
     args.data_dir += '/'
+  
+  if args.dataset:
+    args.dataset = args.dataset.upper()
+    
 
   # Initialize WandB
   if args.config:
@@ -76,9 +84,11 @@ def parse_args():
                 'device': 'cuda' if args.gpu and torch.cuda.is_available() else 'cpu',
                 'amp': args.amp,
                 'augment_boost': args.augment_boost,
+                'save_n_epoch': args.save_n_epoch,
                 'in_channels': args.in_channels,
                 'n_classes': args.n_classes,
                 'test': args.test,
+                'predict': args.predict, 
               })
 
   if not torch.cuda.is_available() and args.gpu:
@@ -108,11 +118,11 @@ def test(net, test_dataset):
   test_loss_image_path = './output/metrics.png'
 
   writer = CSVWriter('output/test.csv')
-  writer.write_headers(['mIoU', 'accuracy', 'f1']).write('mIoU', metrics['mIoU']).write('accuracy', metrics['accuracy']).write('f1', metrics['f1'])
+  writer.write_headers(['mIoU', 'accuracy', 'f1']).write('mIoU', metrics['mIoU']).write('accuracy', metrics['accuracy']).write('f1', metrics['f1']).flush()
 
   create_file_path_or_not(test_loss_image_path)
 
-  colors = 'red green blue yellow purple'.split()
+  colors = ['red', 'green', 'blue', 'yellow', 'purple']
   draw_metrics(metrics, title='Metrics', colors=colors, save_data=True, filename=test_loss_image_path)
   wandb.log({'metrics': metrics, 'metrics_image': test_loss_image_path})
 
@@ -129,9 +139,9 @@ def train(net, train_dataset, valid_dataset):
                 average='macro')
 
   writer = CSVWriter('output/train.csv')
-  writer.write_headers(['loss']).write('loss', train_losses)
+  writer.write_headers(['loss']).write('loss', train_losses).flush()
   writer = CSVWriter('output/valid.csv')
-  writer.write_headers(['loss']).write('loss', valid_losses)
+  writer.write_headers(['loss']).write('loss', valid_losses).flush()
 
   train_loss_image_path = './output/train_loss.png'
   valid_loss_image_path = './output/valid_loss.png'
@@ -147,11 +157,12 @@ def train(net, train_dataset, valid_dataset):
   wandb.log({'train_losses': train_losses, 'valid_losses': valid_losses, 'train_loss_image': train_loss_image_path, 'valid_loss_image': valid_loss_image_path})
 
 
-def predict():
-  pass
+def predict(net, input):
+  output = predict_one(net, input)
+  
 
 def main():  
-  _ = parse_args()
+  args = parse_args()
   
   net = select_model(wandb.config.model, in_channels=wandb.config.in_channels, n_classes=wandb.config.n_classes)
 
@@ -159,13 +170,13 @@ def main():
   train_dataset, valid_dataset, test_dataset = \
     get_train_valid_and_test(wandb.config.dataset, dataset_dir,
                              train_valid_test=[0.7, 0.2, 0.1], 
-                             use_augment_enhance=wandb.config.augment_boost)
+                             use_augment_enhance=wandb.config.augment_boost) # type: ignore
 
-  # if _.predict:
-  #   predict()
-  #   return 
+  if args.predict:
+    predict(net, args.input)
+    return 
 
-  if _.test:
+  if args.test:
     test(net, test_dataset)
     return
   

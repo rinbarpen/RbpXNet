@@ -11,7 +11,8 @@ def create_file(filepath):
     with open(filepath, 'r') as f:
       pass
   except FileNotFoundError:
-    os.makedirs(os.path.dirname(filepath))
+    if not os.path.exists(os.path.dirname(filepath)):
+      os.makedirs(os.path.dirname(filepath))
     with open(filepath, 'w') as f:
       pass
 
