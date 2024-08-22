@@ -7,13 +7,14 @@ from threading import Thread
 from train import *
 from test import *
 from predict import *
+from utils.Transforms import TransformBuilder
 from utils.datasets.dataset import get_train_valid_and_test
 
 import torch
 from torch import nn
 from utils.utils import *
 from utils.visualization import draw_loss_graph, draw_metrics
-
+import cv2
 from argparse import ArgumentParser
 from utils.writer import CSVWriter
 
@@ -21,13 +22,11 @@ def parse_args():
   parser = ArgumentParser(description='Training Configuration')
   parser.add_argument('-c', '--config', type=str, help='Train configuration file (JSON format)')
 
-  # Create groups
   general_group = parser.add_argument_group('General Settings')
   model_group = parser.add_argument_group('Model Configuration')
   training_group = parser.add_argument_group('Training Configuration')
   predict_group = parser.add_argument_group('Predict Configuration')
 
-  # Add arguments to groups
   general_group.add_argument('--proj', type=str, help='Project Name')
   general_group.add_argument('--entity', type=str, help='Entity Name')
   general_group.add_argument('--test', action='store_true', help='Test the model')
@@ -47,10 +46,29 @@ def parse_args():
   training_group.add_argument('--amp', action='store_true', help='Use half precision mode')
   training_group.add_argument('--save_n_epoch', type=int, default=1, help='Use half precision mode')
 
-  predict_group.add_argument('--input', type=str, help='The input data to predict')
+  predict_group.add_argument('-l', '--load', type=str, help='The model used to predict')
+  predict_group.add_argument('-i', '--input', type=str, help='The input data to predict')
 
   args = parser.parse_args()
   
+  if args.predict:
+    wandb.init(project=args.proj,
+               config={
+                'model': args.model,
+                'load': args.load,
+                'input': args.input,
+                'device': 'cuda' if args.gpu and torch.cuda.is_available() else 'cpu',
+                'in_channels': args.in_channels,
+                'n_classes': args.n_classes,
+                'amp': args.amp,
+              })
+
+    if not torch.cuda.is_available() and args.gpu:
+      print('Warning: No GPU found, training will be performed on CPU.')
+      logging.warning('No GPU found, training will be performed on CPU.')
+  
+    return args
+
   if not args.data_dir.endswith('/'):
     args.data_dir += '/'
   
@@ -58,7 +76,6 @@ def parse_args():
     args.dataset = args.dataset.upper()
     
 
-  # Initialize WandB
   if args.config:
     ext = args.config.splitext(args.config)[1]
     if ext in ['json']:
@@ -101,6 +118,8 @@ def parse_args():
 def select_model(model: str, *args, **kwargs):
   if model == 'UNet':
     return UNet(kwargs['in_channels'], kwargs['n_classes'])
+  elif model == 'UNetOriginal':
+    return UNetOriginal(kwargs['in_channels'], kwargs['n_classes'])
   elif model == 'UNet++':
     pass
   else: 
@@ -158,23 +177,44 @@ def train(net, train_dataset, valid_dataset):
 
 
 def predict(net, input):
-  output = predict_one(net, input)
+  model_state_dict = load_model(wandb.config.load)
+  net.load_state_dict(model_state_dict)
+  input = Image.open(input).convert('RGB')
+  original_size = input.size
+  input = input.resize((512,512))
   
+  input = torch.from_numpy(np.array(input).astype(np.float32))
+  input = input.expand(1, -1, -1, -1).permute(0, 3, 1, 2)
+  
+  output = predict_one(net, input)
+  predict_np = output.squeeze().cpu().detach().numpy()
+  predict_np[predict_np >= 0.5] = 255
+  predict_np[predict_np < 0.5] = 0
+  
+  img = Image.fromarray(predict_np, 'L')
+  img = img.resize(original_size)
+  img.save('./output/predict.png')
+  
+  # plt.imshow(np.array(input.squeeze(0).permute(1, 2, 0)), alpha=0.5)  # 原始图像
+  plt.imshow(img)  # 叠加预测结果
+  plt.axis('off')  # 不显示坐标轴
+  plt.title('Model Prediction')
+  plt.show()
 
 def main():  
   args = parse_args()
   
   net = select_model(wandb.config.model, in_channels=wandb.config.in_channels, n_classes=wandb.config.n_classes)
+  if args.predict:
+    predict(net, args.input)
+    return 
+  
 
   dataset_dir = wandb.config.data_dir + wandb.config.dataset
   train_dataset, valid_dataset, test_dataset = \
     get_train_valid_and_test(wandb.config.dataset, dataset_dir,
                              train_valid_test=[0.7, 0.2, 0.1], 
                              use_augment_enhance=wandb.config.augment_boost) # type: ignore
-
-  if args.predict:
-    predict(net, args.input)
-    return 
 
   if args.test:
     test(net, test_dataset)

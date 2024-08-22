@@ -29,11 +29,15 @@ def save_model(model, path):
     torch.save(model.state_dict(), path)
     wandb.save(path)
 
-def load_model(model, path):
+def load_model(path):
   try:
-    torch.load(model.state_dict(), path)
+    checkpoint = torch.load(path)
+    return checkpoint
   except FileNotFoundError as e:
     logging.error(f'File Not Found: {e}')
+    raise e
+  except Exception as e:
+    logging.error(f'Error loading model: {e}')
     raise e
 
 def save_data(filename: Union[str, Path], data: Union[np.ndarray, torch.Tensor]):

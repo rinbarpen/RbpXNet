@@ -17,16 +17,16 @@ class DriveDataset(Dataset):
 
     if split == 'train':
       self.image_dir = self.dir / 'training' / 'images'
-      self.mask_dir = self.dir / 'training' / 'mask'
+      self.mask_dir = self.dir / 'training' / '1st_manual'
     elif split == 'valid':
       self.image_dir = self.dir / 'training' / 'images'
-      self.mask_dir = self.dir / 'training' / 'mask'
+      self.mask_dir = self.dir / 'training' / '1st_manual'
     elif split == 'test':
       self.image_dir = self.dir / 'test' / 'images'
-      self.mask_dir = self.dir / 'test' / 'mask'
+      self.mask_dir = self.dir / 'test' / '1st_manual'
 
-    self.images = [self.image_dir / image for image in os.listdir(self.image_dir) if image.endswith('.tif')]
-    self.masks = [self.mask_dir / mask for mask in os.listdir(self.mask_dir) if mask.endswith('.gif')]
+    self.images = [self.image_dir / image for image in self.image_dir.glob('*tif')]
+    self.masks = [self.mask_dir / mask for mask in self.mask_dir.glob('*.gif')]
     
     if split == 'train':
       self.images = self.images[:int(len(self.images) * (1 - tv_ratio))]
