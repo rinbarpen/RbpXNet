@@ -14,7 +14,7 @@ import torch
 from torch import nn
 from utils.utils import *
 from utils.visualization import draw_loss_graph, draw_metrics
-import cv2
+
 from argparse import ArgumentParser
 from utils.writer import CSVWriter
 
@@ -50,7 +50,7 @@ def parse_args():
   predict_group.add_argument('-i', '--input', type=str, help='The input data to predict')
 
   args = parser.parse_args()
-  
+
   if args.predict:
     wandb.init(project=args.proj,
                config={
@@ -137,7 +137,7 @@ def test(net, test_dataset):
   test_loss_image_path = './output/metrics.png'
 
   writer = CSVWriter('output/test.csv')
-  writer.write_headers(['mIoU', 'accuracy', 'f1']).write('mIoU', metrics['mIoU']).write('accuracy', metrics['accuracy']).write('f1', metrics['f1']).flush()
+  writer.write_headers(['mIoU', 'accuracy', 'f1', 'precision', 'recall']).write('mIoU', metrics['mIoU']).write('accuracy', metrics['accuracy']).write('f1', metrics['f1']).write('precision', metrics['precision']).write('recall', metrics['recall']).flush()
 
   create_file_path_or_not(test_loss_image_path)
 

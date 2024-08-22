@@ -17,7 +17,8 @@ def train_one_epoch(model, device, epoch, train_loader, optimizer, criterion):
   with tqdm(total=len(train_loader), desc=f'Training') as pbar:
     for inputs, labels in train_loader:
       optimizer.zero_grad()
-      inputs, labels = inputs.to(device), labels.to(device)
+      inputs, labels = inputs.to(device, dtype=torch.float32), labels.to(device, dtype=torch.float32)
+      
       outputs = model(inputs)
       loss = criterion(outputs, labels)
       loss.backward()

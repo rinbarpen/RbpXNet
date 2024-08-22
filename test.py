@@ -31,15 +31,15 @@ def test_model(model, device,
         inputs, labels = inputs.to(device), labels.to(device)
         
         outputs = model(inputs)
+        outputs[outputs >= 0.5] = 255
+        outputs[outputs < 0.5] = 0
         
-        labels = (labels * 256).type(dtype=torch.int8)
-        outputs = (outputs * 256).type(dtype=torch.int8)
         metric = get_metrics(
           outputs.cpu().detach().numpy(), 
           labels.cpu().detach().numpy(), 
           n_classes=n_classes, 
           average=average,
-          selected=['mIoU', 'accuracy', 'f1']
+          selected=['mIoU', 'accuracy', 'f1', 'precision', 'recall']
         )
         metrics.append(metric)
         
