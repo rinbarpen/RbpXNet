@@ -7,7 +7,8 @@ from tqdm import tqdm, trange
 from typing import *
 from utils.visualization import *
 from evaluate import *
-import wandb
+from utils.writer import CSVWriter
+from utils.utils import *
 
 
 def train_one_epoch(model, device, epoch, train_loader, optimizer, criterion):
@@ -35,39 +36,17 @@ def train_one_epoch(model, device, epoch, train_loader, optimizer, criterion):
 
 
 def train_model(model, device, 
-                train_dataset, valid_dataset, batch_size: int, 
+                train_loader, valid_loader,
                 epochs: int, 
-                lr: float,
+                learning_rate: float,
                 n_classes: int,
-                num_workers: int=0, 
+                save_n_epoch: int,
                 weight_decay: float=1e-8,
                 average: str='marco'):  
   model.to(device)
-  def custom_collate_fn(batch):
-    images = torch.stack([item[0] for item in batch]) 
-    masks = torch.stack([item[1] for item in batch])
-    filenames = [item[2] for item in batch]
-    original_sizes = [item[3] for item in batch]
-    return images, masks, filenames, original_sizes
-  train_loader = DataLoader(
-    dataset=train_dataset,
-    batch_size=batch_size, 
-    shuffle=True, 
-    num_workers=num_workers, 
-    pin_memory=True,
-    collate_fn=custom_collate_fn
-  )
-  valid_loader = DataLoader(
-    dataset=valid_dataset,
-    batch_size=batch_size,
-    shuffle=False,
-    num_workers=num_workers,
-    pin_memory=True,
-    collate_fn=custom_collate_fn
-  ) if valid_dataset is not None else None  
 
-  optimizer = optim.Adam(model.parameters(), lr=lr, betas=(0.9, 0.999), weight_decay=weight_decay)
-  criterion = nn.BCEWithLogitsLoss() if wandb.config.n_classes == 1 else nn.CrossEntropyLoss()
+  optimizer = optim.Adam(model.parameters(), lr=learning_rate, betas=(0.9, 0.999), weight_decay=weight_decay)
+  criterion = nn.BCEWithLogitsLoss() if n_classes == 1 else nn.CrossEntropyLoss()
 
   best_train_loss = float('inf')
 
@@ -90,10 +69,9 @@ def train_model(model, device,
       
     train_losses.append(train_loss)
 
-    
-    if (epoch+1) % wandb.config.save_n_epoch == 0:
+    if (epoch+1) % save_n_epoch == 0:
       saved_model_filename = \
-        f'./output/models/{wandb.config.model}-{epoch+1}of{wandb.config.epochs}-{wandb.config.dataset}.pth'
+        f'./output/models/{wandb.config.model}-{epoch+1}of{epochs}-{wandb.config.dataset}.pth'
       torch.save(model.state_dict(), saved_model_filename)
       logging.info(f'save model to {saved_model_filename} when epoch={epoch}, loss={train_loss}')
     if train_loss < best_train_loss:
@@ -102,3 +80,34 @@ def train_model(model, device,
       logging.info(f'save model to best_model.pth when epoch={epoch}, loss={train_loss}')
 
   return train_losses, valid_losses 
+
+
+def train(net, train_loader, valid_loader, device, epochs, learning_rate, n_classes, save_n_epoch, weight_decay=1e-8):
+  train_losses, valid_losses = \
+    train_model(net, 
+                device=device, 
+                train_loader=train_loader, 
+                valid_loader=valid_loader, 
+                n_classes=n_classes,
+                epochs=epochs, 
+                save_n_epoch=save_n_epoch,
+                learning_rate=learning_rate,
+                average='macro')
+
+  writer = CSVWriter('output/train.csv')
+  writer.write_headers(['loss']).write('loss', train_losses).flush()
+  writer = CSVWriter('output/valid.csv')
+  writer.write_headers(['loss']).write('loss', valid_losses).flush()
+
+  train_loss_image_path = './output/train_loss.png'
+  create_file_path_or_not(train_loss_image_path)
+  draw_loss_graph(losses=train_losses, title='Train Losses', save_data=True, 
+                  filename=train_loss_image_path)
+  
+  if valid_loader is not None:
+    valid_loss_image_path = './output/valid_loss.png'
+    create_file_path_or_not(valid_loss_image_path)
+    draw_loss_graph(losses=valid_losses, title='Validation Losses', save_data=True, 
+                  filename=valid_loss_image_path)
+
+  # wandb.log({'train_losses': train_losses, 'valid_losses': valid_losses, 'train_loss_image': train_loss_image_path, 'valid_loss_image': valid_loss_image_path})

@@ -5,6 +5,8 @@ from pathlib import Path
 from typing import Union, Tuple, List
 import os
 import wandb
+from models.unet.unet import UNet, UNetOriginal
+
 
 def create_file(filepath):
   try:
@@ -29,9 +31,9 @@ def save_model(model, path):
     torch.save(model.state_dict(), path)
     wandb.save(path)
 
-def load_model(path):
+def load_model(path, device):
   try:
-    checkpoint = torch.load(path)
+    checkpoint = torch.load(path, map_location=device)
     return checkpoint
   except FileNotFoundError as e:
     logging.error(f'File Not Found: {e}')
@@ -53,7 +55,7 @@ def save_data(filename: Union[str, Path], data: Union[np.ndarray, torch.Tensor])
     wandb.save(filename)
 
 
-def load_data(filename: Union[str, Path]):
+def load_data(filename: Union[str, Path]) -> np.ndarray:
   try:
     data = np.load(filename)
     return data 
@@ -66,3 +68,13 @@ def tuple2list(t: Tuple):
 
 def list2tuple(l: List):
   return tuple(l)
+
+def select_model(model: str, *args, **kwargs):
+  if model == 'UNet':
+    return UNet(kwargs['in_channels'], kwargs['n_classes'])
+  elif model == 'UNetOriginal':
+    return UNetOriginal(kwargs['in_channels'], kwargs['n_classes'])
+  elif model == 'UNet++':
+    pass
+  else: 
+    raise ValueError(f'Not supported model: {model}')

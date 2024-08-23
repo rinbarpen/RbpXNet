@@ -6,6 +6,8 @@ import os
 import numpy as np
 from typing import Literal
 
+from utils.Transforms import TransformBuilder
+
 
 SplitType = Literal['train', 'valid', 'test'] 
 
@@ -30,7 +32,7 @@ class DriveDataset(Dataset):
     
     if split == 'train':
       self.images = self.images[:int(len(self.images) * (1 - tv_ratio))]
-      self.masks = self.masks[:int(len(self.masks) * (1 - tv_ratio))]
+      self.masks = self.masks[:int(len(self.masks) * (1 - tv_ratio))] 
     elif split == 'valid':
       self.images = self.images[int(len(self.images) * (1 - tv_ratio)):]
       self.masks = self.masks[int(len(self.masks) * (1 - tv_ratio)):]
@@ -48,10 +50,18 @@ class DriveDataset(Dataset):
       image, mask = self.transforms[0](image), self.transforms[1](mask)
     
     return image, mask, os.path.splitext(os.path.basename(mask_path))[0], mask.shape
-
+  
+  @staticmethod
+  def collate_fn(batch):
+    images = torch.stack([item[0] for item in batch]) 
+    masks = torch.stack([item[1] for item in batch])
+    filenames = [item[2] for item in batch]
+    original_sizes = [item[3] for item in batch]
+    return images, masks, filenames, original_sizes
+  
   @staticmethod
   def get_train_valid_and_test(drive_dir, tv_ratio=0.2, transforms=None):
-    train_set = DriveDataset(drive_dir, 'train', tv_ratio, transforms=transforms)
-    valid_set = DriveDataset(drive_dir, 'valid', tv_ratio, transforms=transforms)
-    test_set  = DriveDataset(drive_dir, 'test',  tv_ratio, transforms=transforms)
+    train_set = DriveDataset(drive_dir, 'train', tv_ratio, transforms=transforms[0])
+    valid_set = DriveDataset(drive_dir, 'valid', tv_ratio, transforms=transforms[0])
+    test_set  = DriveDataset(drive_dir, 'test',  tv_ratio, transforms=transforms[1])
     return (train_set, valid_set, test_set)

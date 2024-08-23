@@ -66,9 +66,9 @@ def get_metrics(targets, preds, n_classes: int, average: str, selected: List[str
   results = dict()
   if 'accuracy' in selected:
     results['accuracy'] = accuracy_score(targets, preds, n_classes)  
-  if'mIoU' in selected:
+  if 'mIoU' in selected:
     results['mIoU'] = mIoU(targets, preds, n_classes)
-  if'recall' in selected:
+  if 'recall' in selected:
     results['recall'] = recall_score(targets, preds, average=average)
   if 'precision' in selected:
     results['precision'] = precision_score(targets, preds, average=average)
