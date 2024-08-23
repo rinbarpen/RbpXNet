@@ -7,4 +7,7 @@ def predict_one(model, input):
   model.eval()
   with torch.no_grad():
     predict = model(input)
-  return predict
+    predict_np = predict.squeeze().cpu().detach().numpy()
+    predict_np[predict_np >= 0.5] = 255
+    predict_np[predict_np < 0.5] = 0
+  return predict_np

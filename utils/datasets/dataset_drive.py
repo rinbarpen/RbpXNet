@@ -47,7 +47,7 @@ class DriveDataset(Dataset):
     if self.transforms:
       image, mask = self.transforms[0](image), self.transforms[1](mask)
     
-    return image, mask
+    return image, mask, os.path.splitext(os.path.basename(mask_path))[0], mask.shape
 
   @staticmethod
   def get_train_valid_and_test(drive_dir, tv_ratio=0.2, transforms=None):

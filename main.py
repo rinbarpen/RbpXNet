@@ -127,6 +127,7 @@ def select_model(model: str, *args, **kwargs):
 
 
 def test(net, test_dataset):  
+  net.load_state_dict(load_model('./output/best_model.pth'))
   metrics = test_model(net, 
                        device=wandb.config.device, 
                        test_dataset=test_dataset, 
@@ -134,16 +135,16 @@ def test(net, test_dataset):
                        n_classes=wandb.config.n_classes,
                        average='macro')
   
-  test_loss_image_path = './output/metrics.png'
 
-  writer = CSVWriter('output/test.csv')
-  writer.write_headers(['mIoU', 'accuracy', 'f1', 'precision', 'recall']).write('mIoU', metrics['mIoU']).write('accuracy', metrics['accuracy']).write('f1', metrics['f1']).write('precision', metrics['precision']).write('recall', metrics['recall']).flush()
+  # writer = CSVWriter('output/test.csv')
+  # writer.write_headers(['mIoU', 'accuracy', 'f1', 'precision', 'recall']).write('mIoU', metrics['mIoU']).write('accuracy', metrics['accuracy']).write('f1', metrics['f1']).write('precision', metrics['precision']).write('recall', metrics['recall']).flush()
 
-  create_file_path_or_not(test_loss_image_path)
+  # test_loss_image_path = './output/metrics.png'
+  # create_file_path_or_not(test_loss_image_path)
 
-  colors = ['red', 'green', 'blue', 'yellow', 'purple']
-  draw_metrics(metrics, title='Metrics', colors=colors, save_data=True, filename=test_loss_image_path)
-  wandb.log({'metrics': metrics, 'metrics_image': test_loss_image_path})
+  # colors = ['red', 'green', 'blue', 'yellow', 'purple']
+  # draw_metrics(metrics, title='Metrics', colors=colors, save_data=True, filename=test_loss_image_path)
+  # wandb.log({'metrics': metrics, 'metrics_image': test_loss_image_path})
 
 def train(net, train_dataset, valid_dataset):  
   train_losses, valid_losses = \
@@ -163,17 +164,17 @@ def train(net, train_dataset, valid_dataset):
   writer.write_headers(['loss']).write('loss', valid_losses).flush()
 
   train_loss_image_path = './output/train_loss.png'
-  valid_loss_image_path = './output/valid_loss.png'
-  
   create_file_path_or_not(train_loss_image_path)
-  create_file_path_or_not(valid_loss_image_path)
-
   draw_loss_graph(losses=train_losses, title='Train Losses', save_data=True, 
                   filename=train_loss_image_path)
-  draw_loss_graph(losses=valid_losses, title='Validation Losses', save_data=True, 
+  
+  if valid_dataset is not None:
+    valid_loss_image_path = './output/valid_loss.png'
+    create_file_path_or_not(valid_loss_image_path)
+    draw_loss_graph(losses=valid_losses, title='Validation Losses', save_data=True, 
                   filename=valid_loss_image_path)
 
-  wandb.log({'train_losses': train_losses, 'valid_losses': valid_losses, 'train_loss_image': train_loss_image_path, 'valid_loss_image': valid_loss_image_path})
+  # wandb.log({'train_losses': train_losses, 'valid_losses': valid_losses, 'train_loss_image': train_loss_image_path, 'valid_loss_image': valid_loss_image_path})
 
 
 def predict(net, input):
@@ -187,11 +188,8 @@ def predict(net, input):
   input = input.expand(1, -1, -1, -1).permute(0, 3, 1, 2)
   
   output = predict_one(net, input)
-  predict_np = output.squeeze().cpu().detach().numpy()
-  predict_np[predict_np >= 0.5] = 255
-  predict_np[predict_np < 0.5] = 0
   
-  img = Image.fromarray(predict_np, 'L')
+  img = Image.fromarray(output, 'L')
   img = img.resize(original_size)
   img.save('./output/predict.png')
   
@@ -213,15 +211,15 @@ def main():
   dataset_dir = wandb.config.data_dir + wandb.config.dataset
   train_dataset, valid_dataset, test_dataset = \
     get_train_valid_and_test(wandb.config.dataset, dataset_dir,
-                             train_valid_test=[0.7, 0.2, 0.1], 
+                             train_valid_test=[0.9, 0, 0.1], 
                              use_augment_enhance=wandb.config.augment_boost) # type: ignore
 
   if args.test:
     test(net, test_dataset)
     return
   
-  train(net, train_dataset, valid_dataset)
-  test(net, test_dataset)
+  train(net, train_dataset, None)
+  # test(net, test_dataset)
 
 
 main()
