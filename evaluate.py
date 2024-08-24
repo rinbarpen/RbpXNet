@@ -1,11 +1,24 @@
 import torch
-import torch.nn.functional as F
 from tqdm import tqdm
-
-from utils.loss.dice_score import multiclass_dice_coeff, dice_coeff
+from utils.metrics.dice_score import dice_loss, multiclass_dice_coeff, dice_coeff
 
 
 def valid_one_epoch(model, device, epoch, valid_loader, criterion, n_classes, average):
+  """
+  Validates the model for one epoch.
+
+  Parameters:
+  - model: The trained model to validate.
+  - device: The device (CPU or GPU) to perform computations on.
+  - epoch: The current epoch number.
+  - valid_loader: The data loader for the validation dataset.
+  - criterion: The loss function to calculate the loss.
+  - n_classes: The number of classes in the dataset.
+  - average: A flag indicating whether to average the loss over all classes.
+
+  Returns:
+  - val_loss: The average loss for the validation dataset.
+  """
   model.eval()
   val_loss = 0.0
 

@@ -1,18 +1,18 @@
+import os
+import sys
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import json
 import sys
-from wandb.sdk import wandb_config
 import yaml
 import wandb
-from multiprocessing import Process
-from threading import Thread
 from train import train
 from test import test
 from predict import predict
 from utils.datasets.dataset import get_train_valid_and_test_loader
 
-import torch
 from utils.utils import *
-from utils.writer import CSVWriter
 
 from argparse import ArgumentParser
 
@@ -136,7 +136,13 @@ if __name__ == '__main__':
   
   net = select_model(model, in_channels=in_channels, n_classes=n_classes)
   if args.predict:
-    predict(net, args.input, device=device)
+    if os.path.isdir(args.input):
+      input_dir = Path(args.input)
+      inputs = [input_dir / input for input in input_dir.glob("*.*") 
+                if input.suffix.lower() in [".png", ".jpg", ".jpeg", ".tif", ".gif"]]
+    else:
+      inputs = [args.input]
+    predict(net, inputs, device=device)
     sys.exit(0) 
 
   dataset = args.dataset

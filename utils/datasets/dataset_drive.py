@@ -27,7 +27,7 @@ class DriveDataset(Dataset):
       self.image_dir = self.dir / 'test' / 'images'
       self.mask_dir = self.dir / 'test' / '1st_manual'
 
-    self.images = [self.image_dir / image for image in self.image_dir.glob('*tif')]
+    self.images = [self.image_dir / image for image in self.image_dir.glob('*.tif')]
     self.masks = [self.mask_dir / mask for mask in self.mask_dir.glob('*.gif')]
     
     if split == 'train':
@@ -49,15 +49,7 @@ class DriveDataset(Dataset):
     if self.transforms:
       image, mask = self.transforms[0](image), self.transforms[1](mask)
     
-    return image, mask, os.path.splitext(os.path.basename(mask_path))[0], mask.shape
-  
-  @staticmethod
-  def collate_fn(batch):
-    images = torch.stack([item[0] for item in batch]) 
-    masks = torch.stack([item[1] for item in batch])
-    filenames = [item[2] for item in batch]
-    original_sizes = [item[3] for item in batch]
-    return images, masks, filenames, original_sizes
+    return image, mask
   
   @staticmethod
   def get_train_valid_and_test(drive_dir, tv_ratio=0.2, transforms=None):

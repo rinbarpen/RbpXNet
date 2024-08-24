@@ -1,16 +1,19 @@
 from matplotlib import pyplot as plt
 import torch
 import numpy as np
-from typing import List, Union, Optional, Dict
+from typing import List, Tuple, Union, Optional, Dict
 from PIL import Image
-import wandb
-from utils.metrics import metric_name_list
+from utils.utils import create_dirs, create_file_parents
+import seaborn as sns
 
 ImageType = Union[torch.Tensor, np.ndarray, Image.Image]
+ArrayLike = Union[List[float], np.array, torch.Tensor]
 
 
 def save_image(filename: str):
+  create_file_parents(filename)
   plt.savefig(filename)
+  plt.close()
 
 
 def show_images(images: List[ImageType], 
@@ -57,47 +60,80 @@ def show_image_comparison(pre: ImageType, post: ImageType, mask: ImageType,
     axes[1, 0].set_title(titles[2])
   
   plt.subplots_adjust(wspace=0.1, hspace=0.3)
-  save_image(filename) if filename else plt.show()
+  save_image(filename)
 
 
-def draw_metrics(metrics: dict, 
+def save_metrics(metrics: dict, 
                  colors: List[str], 
-                 title: Optional[str] = None, 
-                 selected: List[str]=['accuracy', 'mIoU', 'recall', 'precision', 'f1'], 
-                 save_data: bool=True,
-                 filename: Optional[str]=None):
-  assert metrics is not None and len(selected) <= len(colors), 'metrics must be specified for metric type'
+                 filename: str,
+                 selected: List[str],
+                 title: Optional[str] = None):  
+  assert len(colors) >= len(metrics)
+  
+  metrics_show = dict(filter(lambda item: item[0] in selected, metrics.items()))
   
   plt.figure()
-  
-  metric_show = dict(filter(lambda item: item[0] in selected, metrics.items()))
-  print(metric_show)
-  
   plt.ylim([0, 1])
-  plt.bar(metric_show.keys(), height=metric_show.values(), color=colors[:len(selected)])
+  plt.bar(metrics_show.keys(), height=metrics_show.values(), color=colors[:len(selected)])
   
-  if title is not None:
+  if title:
     plt.title(title)
   
-  save_image(filename) if filename else plt.show()
-  if save_data:
-    wandb.Image(filename)
+  save_image(filename)
 
-def draw_loss_graph(losses: List[float], 
-                    title: Optional[str]=None, 
-                    save_data: bool=True, 
-                    filename: Optional[str]=None):
-  assert losses is not None and len(losses) > 0, 'losses must be specified for each iteration'
+
+def draw_xy_graph(values: List[float], gap: float, xlabel: str, ylabel: str, filename: str, title: Optional[str]=None):
+  plt.figure()
+  plt.plot([(i+1)*gap for i in range(len(values))], values)
+  plt.xlabel(xlabel)
+  plt.ylabel(ylabel)
+  if title:
+    plt.title(title)
+  
+  save_image(filename)
+
+
+def draw_loss_graph(losses: ArrayLike, filename: str, title: Optional[str]=None):
+  draw_xy_graph(losses, gap=1.0, xlabel="Epoch", ylabel="Loss", filename=filename, title=title)
+
+
+def draw_heat_graph(possibility_matrix: np.array, filename: str, title: Optional[str]=None, x_ticks=False, y_ticks=False, x_label: str="", y_label: str=""):
+  ax = sns.heatmap(possibility_matrix, xticklabels=x_ticks, yticklabels=y_ticks)
+  ax.set_xlabel(x_label)
+  ax.set_ylabel(y_label)
+  if title:
+    ax.set_title(title)
+
+  save_image(filename)
+
+def draw_attention_heat_graph(possibility_matrix: np.array, original_image: Union[np.array, Image.Image, torch.Tensor], filename: str, title: Optional[str]=None, x_ticks=False, y_ticks=False, x_label: str="", y_label: str=""):  
+  """
+    possiblity_matrix:
+      shape: H, W
+      value_range: [0, 1]
+    original_image:
+      shape: H, W, C
+      value_range: No Limit
+  """
+  if isinstance(original_image, Image.Image):
+    original_image = np.array(original_image)
+  elif isinstance(original_image, torch.Tensor):
+    original_image = original_image.detach().cpu().numpy()
+    
+  assert possibility_matrix.shape[:2] == original_image.shape[:2], "Both of them should be matched at the pixel level."
   
   plt.figure()
-  plt.plot([i+1 for i in range(len(losses))], losses)
-  plt.xlabel('Epoch')
-  plt.ylabel('Loss')
+  plt.imshow(original_image)
+  plt.imshow(possibility_matrix, cmap='YlOrRd', alpha=0.5)
   
-  if title is not None:
-    plt.title(title)
+  plt.xlabel(x_label)
+  plt.ylabel(y_label)
+  if not x_ticks:
+    plt.xticks([])
+  if not y_ticks:
+    plt.yticks([])
+  if title:
+    plt.set_title(title)
   
-  save_image(filename) if filename else plt.show()
-  if save_data:
-    wandb.Image(filename)
-  
+  plt.tight_layout()
+  save_image(filename)
