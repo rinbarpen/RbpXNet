@@ -1,15 +1,16 @@
 import logging
-import torch
-import numpy as np
 import os
-from pathlib import Path
 from typing import Union, Tuple, List
+
+import numpy as np
+import torch
+
 from models.unet.unet import UNet, UNetOriginal
 
 
 def create_file_unsafe(filename):
-  with open(filename, 'w'):
-    pass
+    with open(filename, 'w'):
+        pass
 
 
 def create_file(filename: str) -> None:
@@ -25,7 +26,7 @@ def create_file(filename: str) -> None:
     """
     if os.path.exists(filename):
         return
-    
+
     create_file_unsafe(filename)
 
 
@@ -42,8 +43,9 @@ def create_dirs(path: str) -> None:
     """
     if os.path.exists(path):
         return
-    
+
     os.makedirs(path)
+
 
 def create_file_parents(filename: str) -> None:
     """
@@ -59,8 +61,9 @@ def create_file_parents(filename: str) -> None:
     """
     dirname = os.path.dirname(filename)
     if os.path.exists(filename) or os.path.exists(dirname):
-        return 
+        return
     os.makedirs(dirname)
+
 
 def create_file_if_not_exist(filename: str) -> None:
     """
@@ -153,21 +156,43 @@ def save_data(filename: str, data: Union[np.ndarray, torch.Tensor]) -> None:
 
 
 def load_data(filename: str) -> np.ndarray:
-  try:
-    data = np.load(filename)
-    return data 
-  except FileNotFoundError as e:
-    logging.error(f'File Not Found: {e}')
-    raise e
+    try:
+        data = np.load(filename)
+        return data
+    except FileNotFoundError as e:
+        logging.error(f'File Not Found: {e}')
+        raise e
+
 
 def tuple2list(t: Tuple):
-  return list(t)
+    return list(t)
+
 
 def list2tuple(l: List):
-  return tuple(l)
+    return tuple(l)
+
 
 def select_model(model: str, *args, **kwargs):
-  match(model):
-    case 'UNet': return UNet(kwargs['in_channels'], kwargs['n_classes'])
-    case 'UNetOriginal': return UNetOriginal(kwargs['in_channels'], kwargs['n_classes'])
-    case _: raise ValueError(f'Not supported model: {model}')  
+    match (model):
+        case 'UNet':
+            return UNet(kwargs['in_channels'], kwargs['n_classes'], use_bilinear=True)
+        case 'UNetOriginal':
+            return UNetOriginal(kwargs['in_channels'], kwargs['n_classes'], use_bilinear=True)
+        case _:
+            raise ValueError(f'Not supported model: {model}')
+
+
+def do_if(condition, fn, *args, **kwargs):
+    if condition:
+        return fn(args, kwargs)
+    return None
+
+
+def do_if_not(condition, fn, *args, **kwargs):
+    if not condition:
+        return fn(args, kwargs)
+    return None
+
+def where(condition, true_fn, false_fn):
+    return true_fn() if condition else false_fn()
+

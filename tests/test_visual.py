@@ -1,11 +1,9 @@
-import sys, os
+import os
+import sys
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import unittest
-from PIL import Image
-import numpy as np
-from io import BytesIO
-import matplotlib.pyplot as plt
 from utils.visualization import *
 
 class TestShowImages(unittest.TestCase):
@@ -87,7 +85,7 @@ class TestDrawMetrics(unittest.TestCase):
 
     def test_draw_metrics_with_filename(self):
         try:
-            draw_metrics(self.metrics, self.colors, title="Metrics", filename='metrics.png')
+            draw_metrics_graph(self.metrics, self.colors, title="Metrics", filename='metrics.png')
         except Exception as e:
             self.fail(f"draw_metrics with filename raised an exception: {e}")
 

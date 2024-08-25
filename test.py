@@ -1,87 +1,99 @@
-import torch
-from torch.utils.data import DataLoader
-from tqdm import tqdm, trange
-import wandb
-from utils.metrics.dice_score import dice_loss
-from utils.metrics import get_metrics
+import logging
+import os
 from typing import *
 
-import matplotlib.pyplot as plt
-import cv2
+import torch
+from tqdm import tqdm
 
-from utils.utils import create_file_if_not_exist, load_model
-from utils.visualization import draw_metrics
+from utils.metrics.metrics import get_metrics
+from utils.utils import load_model
+from utils.visualization import draw_metrics_graph
 from utils.writer import CSVWriter
 
 
 def test_model(model, device, test_loader,
-  classes: List[str], average: str='marco'):  
-  assert len(classes) >= 2, 'predict the number of classes should be greater than 0'
-  # labels = ["background", "vein"]
+               classes: List[str], average: str = 'marco', selected_metrics: List[str] = ["dice", "f1", "recall"]):
+    assert len(classes) >= 1, 'predict the number of classes should be greater than 0'
 
-  model.to(device)
-  model.eval()
-  
-  mean_metric = dict()
-  n_step = len(test_loader)
-  with tqdm(total=n_step, desc=f'Testing') as pbar:
-    with torch.no_grad():
-      for inputs, labels in test_loader:
-        inputs, labels = inputs.to(device, dtype=torch.float32), labels.to(device, dtype=torch.float32)
-        
-        outputs = model(inputs)
-        threshold = 0.5
-        outputs[outputs >= threshold] = 255
-        outputs[outputs < threshold] = 0
-                
-        metric = get_metrics(
-          outputs.cpu().detach().numpy(), 
-          labels.cpu().detach().numpy(), 
-          labels=classes,
-          average=average
-        )
-        
-        for k, v in metric.items():
-          if k in mean_metric:
-            mean_metric[k] += v
-          else:
-            mean_metric[k] = v
-        
-        pbar.update()
-        pbar.set_postfix(**{'metrics(batch)': repr(metric)})
-  
-  for k in mean_metric.keys():
-    mean_metric[k] /= len(test_loader)
+    model.to(device)
+    model.eval()
 
-  return mean_metric
+    mean_metric = dict()
+    n_step = len(test_loader)
+    with tqdm(total=n_step, desc=f'Testing') as pbar:
+        with torch.no_grad():
+            for inputs, labels in test_loader:
+                inputs, labels = inputs.to(device, dtype=torch.float32), labels.to(device, dtype=torch.float32)
+
+                outputs = model(inputs)
+                threshold = 0.5
+                outputs[outputs >= threshold] = 255
+                outputs[outputs < threshold] = 0
+
+                metric = get_metrics(
+                    outputs.cpu().detach().numpy(),
+                    labels.cpu().detach().numpy(),
+                    labels=classes,
+                    average=average,
+                    selected=selected_metrics
+                )
+
+                for k, v in metric.items():
+                    if k in mean_metric:
+                        mean_metric[k] += v
+                    else:
+                        mean_metric[k] = v
+
+                pbar.update()
+                pbar.set_postfix(**{'metrics(batch)': repr(metric)})
+
+    for k in mean_metric.keys():
+        mean_metric[k] /= len(test_loader)
+
+    return mean_metric
 
 
-def test(net, test_loader, device, classes: List[str]):
-  """
-  This function tests a deep learning model using a given test dataset.
+def test(net, test_loader, device, classes: List[str], selected_metrics: List[str]):
+    """
+    This function tests a deep learning model using a given test dataset.
 
-  Parameters:
-  - net: The deep learning model to be tested.
-  - test_loader: A DataLoader object for the test dataset.
-  - device: The device (CPU or GPU) to run the model on.
-  - classes: A list of class names for the dataset.
+    Parameters:
+    - net: The deep learning model to be tested.
+    - test_loader: A DataLoader object for the test dataset.
+    - device: The device (CPU or GPU) to run the model on.
+    - classes: A list of class names for the dataset.
 
-  Returns:
-  - metrics: A dictionary containing the evaluation metrics (mIoU, accuracy, f1, dice, roc, auc) of the model on the test dataset.
-  """
+    Returns:
+    - metrics: A dictionary containing the evaluation metrics (mIoU, accuracy, f1, dice, roc, auc) of the model on the test dataset.
+    """
 
-  net.to(device)
-  net.load_state_dict(load_model('./output/best_model.pth', device))
-  metrics = test_model(net, 
-                       device=device, 
-                       test_loader=test_loader,
-                       classes=classes,
-                       average='macro')
-  
-  writer = CSVWriter('output/test.csv')
-  writer.write_headers(['mIoU', 'accuracy', 'f1', 'dice', 'roc', 'auc']).write('mIoU', metrics['mIoU']).write('accuracy', metrics['accuracy']).write('f1', metrics['f1']).write('dice', metrics['dice']).write('roc', metrics['roc']).write(['auc'], metrics['auc']).flush()
+    net.to(device)
+    model_path = './output/best_model.pth'
+    logging.info(f"Loading model: {os.path.abspath(model_path)} on {device}")
+    net.load_state_dict(load_model(model_path, device))
+    metrics = test_model(net,
+                         device=device,
+                         test_loader=test_loader,
+                         classes=classes,
+                         average='macro',
+                         selected_metrics=selected_metrics)
 
-  test_loss_image_path = './output/metrics.png'
-  colors = ['red', 'green', 'blue', 'yellow', 'purple']
-  draw_metrics(metrics, title='Metrics', colors=colors, filename=test_loss_image_path)
-  # wandb.log({'metrics': metrics, 'metrics_image': test_loss_image_path})
+    # FIXME: No value saved
+    from config import CONFIG
+    test_csv_filename = f"{CONFIG['save']['test_dir']}test_metrics.csv"
+    writer = CSVWriter(test_csv_filename)
+    writer.write_headers(selected_metrics)
+    for name in selected_metrics:
+        writer.write(name, metrics[name])
+    writer.flush()
+    logging.info(f"Save metrics data to {os.path.abspath(test_csv_filename)}")
+
+    test_loss_image_path = f"{CONFIG['save']['test_dir']}metrics.png"
+    colors = ['red', 'green', 'blue', 'yellow', 'purple']
+    draw_metrics_graph(metrics,
+                       title='Metrics',
+                       colors=colors,
+                       selected=list(metrics.keys()),
+                       filename=test_loss_image_path)
+    logging.info(f"Save metrics graph to {os.path.abspath(test_loss_image_path)}")
+    # wandb.log({'metrics': metrics, 'metrics_image': test_loss_image_path})
