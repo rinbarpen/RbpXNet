@@ -36,3 +36,4 @@ utils/datasets/__pycache__/dataset_polyp.cpython-310.pyc
 utils/datasets/__pycache__/dataset.cpython-310.pyc
 /.vs
 /tests
+*.env
