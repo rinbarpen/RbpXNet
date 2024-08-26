@@ -25,7 +25,7 @@ def get_train_valid_and_test_loader(dataset_name, dataset_dir, batch_size, train
         .horizon_flip()
         .vertical_flip()
         .tensorize()
-        .normalize(True)
+        # .normalize(True)
         .build(),
         Transforms.TransformBuilder(resize)
         .rotation(0.0)
