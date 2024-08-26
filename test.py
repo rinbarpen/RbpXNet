@@ -22,19 +22,18 @@ def test_model(model, device, test_loader,
     n_step = len(test_loader)
     with tqdm(total=n_step, desc=f'Testing') as pbar:
         with torch.no_grad():
-            for inputs, labels in test_loader:
-                inputs, labels = inputs.to(device, dtype=torch.float32), labels.to(device, dtype=torch.float32)
+            for inputs, targets in test_loader:
+                inputs, targets = inputs.to(device, dtype=torch.float32), targets.to(device, dtype=torch.float32)
 
-                outputs = model(inputs)
+                preds = model(inputs)
                 threshold = 0.5
-                outputs[outputs >= threshold] = 255
-                outputs[outputs < threshold] = 0
+                preds[preds >= threshold] = 255
+                preds[preds < threshold] = 0
 
                 metric = get_metrics(
-                    outputs.cpu().detach().numpy(),
-                    labels.cpu().detach().numpy(),
+                    targets.cpu().detach().numpy(),
+                    preds.cpu().detach().numpy(),
                     labels=classes,
-                    average=average,
                     selected=selected_metrics
                 )
 
