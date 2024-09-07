@@ -2,7 +2,7 @@ from typing import List
 
 import numpy as np
 
-from .scores import accuracy_score, dice_score, iou_score, precision_score, recall_score, f1_score, roc_auc_score, auc
+from .scores import dice_score, iou_score, precision_score, recall_score, f1_score, accuracy_score
 
 
 def get_metrics(targets: np.ndarray, preds: np.ndarray, labels: List[str],

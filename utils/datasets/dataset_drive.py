@@ -39,7 +39,7 @@ class DriveDataset(Dataset):
     def __getitem__(self, idx):
         image_path, mask_path = self.images[idx], self.masks[idx]
 
-        image = Image.open(image_path).convert('L')
+        image = Image.open(image_path).convert('RGB')
         mask = Image.open(mask_path).convert('L')
 
         # image = cv2.imread(str(image_path))

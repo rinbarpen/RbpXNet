@@ -12,7 +12,7 @@ from utils.writer import CSVWriter
 
 
 def test_model(model, device, test_loader,
-               classes: List[str], average: str = 'marco', selected_metrics: List[str] = ["dice", "f1", "recall"]):
+               classes: List[str], selected_metrics: List[str] = ["dice", "f1", "recall"]):
     assert len(classes) >= 1, 'predict the number of classes should be greater than 0'
 
     model.to(device)
@@ -27,7 +27,7 @@ def test_model(model, device, test_loader,
 
                 preds = model(inputs)
                 threshold = 0.5
-                preds[preds >= threshold] = 255
+                preds[preds >= threshold] = 1
                 preds[preds < threshold] = 0
 
                 metric = get_metrics(

@@ -3,7 +3,6 @@ import os
 from pathlib import Path
 from typing import List
 
-import cv2
 import numpy as np
 import torch
 from PIL import Image
@@ -33,27 +32,29 @@ def predict_one(net, input: Path, classes: List[str], device):
     net.load_state_dict(load_model(CONFIG['load'], device=device))
 
     input = Image.open(input).convert('L')
-    original_size = input.size
+    original_size = input.size # (W, H)
 
     input = input.resize((512, 512))  # TODO: to be more flexible
     input = torch.from_numpy(np.array(input))
 
-    input = input.unsqueeze(0).unsqueeze(0)
+    input = input.unsqueeze(0).unsqueeze(0) # (1, 1, H, W)
     net, input = net.to(device, dtype=torch.float32), input.to(device, dtype=torch.float32)
 
     net.eval()
     with torch.no_grad():
         predict = net(input)  # (1, N, H, W)
-        possibilities = predict.squeeze(0).cpu().detach().numpy()  # (N, H, W)
-        predict_np = possibilities.copy()  # (N, H, W)
-        predict_np[predict_np >= 0.5] = 255
-        predict_np[predict_np < 0.5] = 0
+        predict = predict.argmax(1).squeeze(0)
+        possibilities = predict.cpu().detach().numpy()  # (N, H, W)
+        predict_image = possibilities.copy()  # (N, H, W)
+        threshold = 0.5
+        predict_image[predict_image >= threshold] = 255
+        predict_image[predict_image < threshold] = 0
+        predict_image = predict_image.astype(np.uint8)
 
-    assert predict_np.shape[0] == len(classes), "The number of classes should be equal to the number of ones predicted"
+    assert predict_image.shape[0] == len(classes), "The number of classes should be equal to the number of ones predicted"
     result = dict()
     for i, name in enumerate(classes):
-        predict_image = cv2.resize(predict_np[i],
-                                   (original_size[0], original_size[1]), interpolation=cv2.INTER_NEAREST)
+        predict_image = Image.fromarray(predict_image, mode='L').resize(size=original_size)
         result[name] = {
             "possibility": possibilities[i],
             "image": predict_image,
@@ -116,8 +117,7 @@ def predict(net, inputs: List[Path], classes: List[str], device):
             heat_path = f"{predict_dir}{heat_filename}"
             fuse_path = f"{predict_dir}{fuse_filename}"
 
-            cv2.imwrite(predict_path, values["image"])
-            # TODO:
+            values["image"].save(predict_path)
             logging.info(f"Save predicted image to {os.path.abspath(predict_path)}")
             draw_heat_graph(values["possibility"],
                             filename=heat_path,

@@ -19,7 +19,7 @@ class TransformBuilder:
         self._horizon_flip = False
         self._vertical_flip = False
         self._tensorize = False
-        self._norm = (False, False)
+        self._norm = dict()
 
     def rotation(self, rotation: float):
         self._rotation = rotation
@@ -37,8 +37,19 @@ class TransformBuilder:
         self._tensorize = True
         return self
 
-    def normalize(self, is_gray: bool=False):
-        self._norm = (True, is_gray)
+    def normalize(self, mean, std):
+        self._norm["mean"] = mean
+        self._norm["std"] = std
+        return self
+
+    def norm_rgb(self):
+        self._norm["mean"] = [0.485, 0.456, 0.406]
+        self._norm["std"] = [0.229, 0.224, 0.225]
+        return self
+
+    def norm_gray(self):
+        self._norm["mean"] = [0.5]
+        self._norm["std"] = [0.5]
         return self
 
     def build(self):

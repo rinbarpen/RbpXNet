@@ -104,8 +104,9 @@ def draw_loss_graph(losses: ArrayLike, filename: str, title: Optional[str] = Non
     draw_xy_graph(losses, gap=1.0, xlabel="Epoch", ylabel="Loss", filename=filename, title=title)
 
 
-def draw_heat_graph(possibility_matrix: Union[np.ndarray, Image.Image, torch.Tensor], filename: str, title: Optional[str] = None, x_ticks=False,
-                    y_ticks=False, x_label: str = "", y_label: str = ""):
+def draw_heat_graph(possibility_matrix: Union[np.ndarray, Image.Image, torch.Tensor], filename: str, title: Optional[str] = None,
+                    x_ticks=False, y_ticks=False,
+                    x_label: str = "", y_label: str = ""):
     """
     Draws a heatmap from a 2D array representing a probability distribution.
 

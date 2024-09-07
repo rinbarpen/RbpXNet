@@ -24,11 +24,12 @@ CONFIG = {
     "epochs": 1,
     "learning_rate": 3e-6,
     "augment_boost": False,
-    "save_n_epoch": 1,
+    "save_every_n_epoch": 1,
+    "weight_decay": 1e-8,
+    "early_exit": False,
     # for predicting
     "load": "", # load model file
     "input": "", # things to be predicted
-
     "save": {
         "predict_dir": "output/predict/",
         "train_dir": "output/train/",
