@@ -25,7 +25,7 @@ class CSVWriter:
         if isinstance(data, torch.Tensor):
             data = data.cpu().detach().numpy()
 
-        self.df[header] = data
+        self.df[header] = [data]
         return self
 
     def writes(self, datium: Dict[str, Union[np.ndarray, torch.Tensor, List[Any]]]):
@@ -34,7 +34,7 @@ class CSVWriter:
                 writen_data = data.cpu().detach().numpy()
             else:
                 writen_data = data
-            self.df[header] = writen_data
+            self.df[header] = [writen_data]
 
         return self
 

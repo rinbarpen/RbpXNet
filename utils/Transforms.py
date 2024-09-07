@@ -1,12 +1,13 @@
 from typing import Tuple
 
 from PIL import Image
+from sympy import transpose
 from torchvision import transforms
 
 
 class BoostTransform:
     def __init__(self, transform):
-        self.transform = transforms.Compose(transform)
+        self.transform = transform
 
     def __call__(self, image: Image.Image):
         return self.transform(image)
@@ -73,17 +74,12 @@ class TransformBuilder:
                 transforms.ToTensor(),
             )
 
-        if self._norm[0]:
-            if self._norm[1]:
-                transform.append(
-                    transforms.Normalize(mean=[0.5], std=[0.5])
-                )
-            else:
-                transform.append(
-                    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-                )
+        if self._norm:
+            transform.append(
+                transforms.Normalize(mean=self._norm['mean'], std=self._norm['std'])
+            )
 
-        return BoostTransform(transform)
+        return BoostTransform(transforms.Compose(transform))
 
 
 def get_rgb_image_transform(resize, rotation=0.0, flip=True):

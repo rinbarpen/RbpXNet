@@ -171,7 +171,7 @@ def draw_attention_heat_graph(possibility_matrix: Union[np.ndarray, Image.Image,
 
     plt.figure()
     plt.imshow(original_image)
-    plt.imshow(possibility_matrix, cmap='YlOrRd', alpha=0.5)
+    plt.imshow(possibility_matrix, cmap='rainbow', alpha=0.5)
 
     plt.xlabel(x_label)
     plt.ylabel(y_label)

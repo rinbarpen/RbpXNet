@@ -6,6 +6,7 @@ from typing import List
 import numpy as np
 import torch
 from PIL import Image
+from torch.functional import F
 
 from utils.utils import load_model
 from utils.visualization import draw_attention_heat_graph, draw_heat_graph
@@ -29,22 +30,26 @@ def predict_one(net, input: Path, classes: List[str], device):
     as a numpy array and the corresponding image as a PIL Image object.
     """
     from config import CONFIG
-    net.load_state_dict(load_model(CONFIG['load'], device=device))
+    net.load_state_dict(load_model(CONFIG['load'], device=device)['model'])
 
-    input = Image.open(input).convert('L')
+    input = Image.open(input).convert('RGB')
     original_size = input.size # (W, H)
 
     input = input.resize((512, 512))  # TODO: to be more flexible
-    input = torch.from_numpy(np.array(input))
+    input = torch.from_numpy(np.array(input).transpose(2, 1, 0))
 
-    input = input.unsqueeze(0).unsqueeze(0) # (1, 1, H, W)
+    input = input.unsqueeze(0) # (1, 3, H, W)
     net, input = net.to(device, dtype=torch.float32), input.to(device, dtype=torch.float32)
 
     net.eval()
     with torch.no_grad():
         predict = net(input)  # (1, N, H, W)
-        predict = predict.argmax(1).squeeze(0)
+
+        # predict = (predict - predict.min()) / (predict.max() - predict.min())
+        predict = F.sigmoid(predict)
+        predict = predict.squeeze(0)
         possibilities = predict.cpu().detach().numpy()  # (N, H, W)
+        possibilities = possibilities.transpose(0, 2, 1)
         predict_image = possibilities.copy()  # (N, H, W)
         threshold = 0.5
         predict_image[predict_image >= threshold] = 255
@@ -54,10 +59,10 @@ def predict_one(net, input: Path, classes: List[str], device):
     assert predict_image.shape[0] == len(classes), "The number of classes should be equal to the number of ones predicted"
     result = dict()
     for i, name in enumerate(classes):
-        predict_image = Image.fromarray(predict_image, mode='L').resize(size=original_size)
+        image = Image.fromarray(predict_image[i], mode='L').resize(size=original_size)
         result[name] = {
             "possibility": possibilities[i],
-            "image": predict_image,
+            "image": image,
         }
     return result
 

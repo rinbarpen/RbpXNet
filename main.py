@@ -17,6 +17,12 @@ from utils.utils import *
 
 from argparse import ArgumentParser
 
+logging.basicConfig(
+    level=logging.INFO,  # 设置日志级别
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[logging.StreamHandler(sys.stdout)]  # 设置输出到标准输出
+)
+
 # logging.basicConfig(level=logging.INFO, format='%(asctime) - %(name)s - %(levelname)s - %(message)s',
 #                     filename=f'logs/{time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())}.log',
 #                     filemode='w')
@@ -59,6 +65,7 @@ def parse_args():
     training_group.add_argument('-b', '--batch_size', type=int, help='Number of samples loaded at one time')
     training_group.add_argument('-e', '--epochs', type=int, help='Number of training epochs')
     training_group.add_argument('-lr', '--learning_rate', type=float, help='Learning rate for training the model')
+    training_group.add_argument('--weight_decay', default=1e-8, type=float, help='Weight decay for training the model')
     training_group.add_argument('--data_dir', type=str, help='The directory of datasets')
     training_group.add_argument('--dataset', type=str, help='Training and testing dataset')
     training_group.add_argument('--augment_boost', action='store_true', help='Use augment of data')

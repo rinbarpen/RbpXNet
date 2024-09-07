@@ -3,6 +3,7 @@ import os
 from typing import *
 
 import torch
+from timm.utils import accuracy
 from tqdm import tqdm
 
 from utils.metrics.metrics import get_metrics
@@ -18,7 +19,7 @@ def test_model(model, device, test_loader,
     model.to(device)
     model.eval()
 
-    mean_metric = dict()
+    mean_metrics = dict()
     n_step = len(test_loader)
     with tqdm(total=n_step, desc=f'Testing') as pbar:
         with torch.no_grad():
@@ -26,30 +27,33 @@ def test_model(model, device, test_loader,
                 inputs, targets = inputs.to(device, dtype=torch.float32), targets.to(device, dtype=torch.float32)
 
                 preds = model(inputs)
+
                 threshold = 0.5
                 preds[preds >= threshold] = 1
                 preds[preds < threshold] = 0
 
-                metric = get_metrics(
+                metrics = get_metrics(
                     targets.cpu().detach().numpy(),
                     preds.cpu().detach().numpy(),
                     labels=classes,
                     selected=selected_metrics
                 )
 
-                for k, v in metric.items():
-                    if k in mean_metric:
-                        mean_metric[k] += v
+                for k, v in metrics.items():
+                    if k in mean_metrics:
+                        mean_metrics[k] += v['average']
                     else:
-                        mean_metric[k] = v
+                        mean_metrics[k] = v['average']
 
                 pbar.update()
-                pbar.set_postfix(**{'metrics(batch)': repr(metric)})
+                pbar.set_postfix(**{
+                    'accuracy': repr(metrics['accuracy']['average'])
+                })
 
-    for k in mean_metric.keys():
-        mean_metric[k] /= len(test_loader)
+    for k in mean_metrics.keys():
+        mean_metrics[k] /= len(test_loader)
 
-    return mean_metric
+    return mean_metrics
 
 
 def test(net, test_loader, device, classes: List[str], selected_metrics: List[str]):
@@ -67,24 +71,22 @@ def test(net, test_loader, device, classes: List[str], selected_metrics: List[st
     """
 
     net.to(device)
-    model_path = './output/best_model.pth'
-    logging.info(f"Loading model: {os.path.abspath(model_path)} on {device}")
-    net.load_state_dict(load_model(model_path, device))
+    model_filename = './output/best_model.pth'
+    logging.info(f"Loading model: {os.path.abspath(model_filename)} on {device}")
+    net.load_state_dict(load_model(model_filename, device)["model"])
     metrics = test_model(net,
                          device=device,
                          test_loader=test_loader,
                          classes=classes,
-                         average='macro',
                          selected_metrics=selected_metrics)
 
     # FIXME: No value saved
     from config import CONFIG
     test_csv_filename = f"{CONFIG['save']['test_dir']}test_metrics.csv"
     writer = CSVWriter(test_csv_filename)
-    writer.write_headers(selected_metrics)
-    for name in selected_metrics:
-        writer.write(name, metrics[name])
-    writer.flush()
+    (writer.write_headers(list(metrics.keys()))
+     .writes(metrics)
+     .flush())
     logging.info(f"Save metrics data to {os.path.abspath(test_csv_filename)}")
 
     test_loss_image_path = f"{CONFIG['save']['test_dir']}metrics.png"

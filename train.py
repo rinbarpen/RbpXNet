@@ -7,19 +7,20 @@ from utils.utils import *
 from utils.visualization import *
 from utils.writer import CSVWriter
 
+from torch.functional import F
 
 def train_one_epoch(model, device, epoch, train_loader, optimizer, criterion):
     model.train()
     train_loss = 0.0
 
     with tqdm(total=len(train_loader), desc=f'Training') as pbar:
-        for inputs, labels in train_loader:
+        for inputs, targets in train_loader:
             optimizer.zero_grad()
-            inputs, labels = inputs.to(device, dtype=torch.float32), labels.to(device, dtype=torch.float32)
+            inputs, targets = inputs.to(device, dtype=torch.float32), targets.to(device, dtype=torch.float32)
 
-            outputs = model(inputs)
+            preds = model(inputs)
 
-            loss = criterion(outputs, labels)
+            loss = criterion(F.sigmoid(preds), targets)
             loss.backward()
 
             optimizer.step()
@@ -41,7 +42,7 @@ def train_model(model, device,
 
     optimizer = optim.Adam(model.parameters(), lr=CONFIG['learning_rate'],
                            betas=(0.9, 0.999), eps=1e-8,
-                           weight_decay=CONFIG['weight_decay'], amsgrad=False)
+                           weight_decay=CONFIG['weight_decay'], amsgrad=True)
     criterion = nn.BCEWithLogitsLoss() if n_classes == 1 else nn.CrossEntropyLoss()
 
     best_train_loss = float('inf')
@@ -65,18 +66,17 @@ def train_model(model, device,
 
         train_losses[epoch] = train_loss
 
-        from config import CONFIG
         if (epoch + 1) % CONFIG['save_every_n_epoch'] == 0:
             save_model_dir = CONFIG["save"]["model_dir"]
             save_model_filename = \
                 f'{save_model_dir}{CONFIG["model"]}-{epoch + 1}of{epochs}-{CONFIG["dataset"]}.pth'
-            save_model(model, save_model_filename)
+            save_model(save_model_filename, model)
             logging.info(f'save model to {save_model_filename} '
                          f'when {epoch=}, {train_loss=}')
         if train_loss < best_train_loss:
             best_train_loss = train_loss
             best_model_filename = CONFIG["save"]["model"]
-            save_model(model, best_model_filename)
+            save_model(best_model_filename, model)
             logging.info(f'save model to {file_prefix_name(best_model_filename)} '
                          f'when {epoch=}, {train_loss=}')
 
