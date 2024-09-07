@@ -4,7 +4,6 @@ from typing import Union, Tuple, List
 
 import numpy as np
 import torch
-
 from models.unet.unet import UNet, UNetOriginal
 
 
@@ -84,7 +83,13 @@ def create_file_if_not_exist(filename: str) -> None:
         create_file_unsafe(filename)
 
 
-def save_model(model, filename):
+def file_prefix_name(filepath: str):
+    return os.path.splitext(os.path.basename(filepath))[0]
+
+def file_suffix_name(filepath: str):
+    return os.path.splitext(os.path.basename(filepath))[1]
+
+def save_model(filename, model, optimizer=None, lr_scheduler=None, scaler=None, **kwargs):
     """
     This function saves the state dictionary of a PyTorch model to a file.
     If the file does not exist, it will be created. If the file exists, the existing file will be overwritten.
@@ -93,12 +98,27 @@ def save_model(model, filename):
     Parameters:
     model (torch.nn.Module): The PyTorch model to save.
     filename (str): The name of the file to save the model state dictionary to. The path to the file can be included.
+    optimizer (torch.optim.Optimizer, optional): The optimizer used for training the model. Defaults to None.
+    lr_scheduler (torch.optim.lr_scheduler._LRScheduler, optional): The learning rate scheduler used for training the model. Defaults to None.
+    scaler (torch.cuda.amp.GradScaler, optional): The gradient scaler used for training the model. Defaults to None.
+    **kwargs: Additional keyword arguments to be saved in the checkpoint.
 
     Returns:
     None
     """
     try:
-        torch.save(model.state_dict(), filename)
+        checkpoint = dict()
+        checkpoint["model"] = model.state_dict()
+        if optimizer:
+            checkpoint["optimizer"] = optimizer.state_dict()
+        if lr_scheduler:
+            checkpoint["lr_scheduler"] = lr_scheduler.state_dict()
+        if scaler:
+            checkpoint["scaler"] = scaler.state_dict()
+        for k, v in kwargs.items():
+            checkpoint[k] = v
+
+        torch.save(checkpoint, filename)
     except FileNotFoundError:
         create_file_parents(filename)
         torch.save(model.state_dict(), filename)
@@ -175,9 +195,9 @@ def list2tuple(l: List):
 def select_model(model: str, *args, **kwargs):
     match (model):
         case 'UNet':
-            return UNet(kwargs['in_channels'], kwargs['n_classes'], use_bilinear=True)
+            return UNet(kwargs['in_channels'], kwargs['n_classes'], kwargs['use_bilinear'])
         case 'UNetOriginal':
-            return UNetOriginal(kwargs['in_channels'], kwargs['n_classes'], use_bilinear=True)
+            return UNetOriginal(kwargs['in_channels'], kwargs['n_classes'], kwargs['use_bilinear'])
         case _:
             raise ValueError(f'Not supported model: {model}')
 
@@ -186,7 +206,6 @@ def do_if(condition, fn, *args, **kwargs):
     if condition:
         return fn(args, kwargs)
     return None
-
 
 def do_if_not(condition, fn, *args, **kwargs):
     if not condition:

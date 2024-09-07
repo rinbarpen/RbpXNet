@@ -64,7 +64,7 @@ def parse_args():
     training_group.add_argument('--augment_boost', action='store_true', help='Use augment of data')
     training_group.add_argument('--gpu', action='store_true', help='GPU to train')
     training_group.add_argument('--amp', action='store_true', help='Use half precision mode')
-    training_group.add_argument('--save_n_epoch', type=int, default=1, help='Use half precision mode')
+    training_group.add_argument('--save_every_n_epoch', type=int, default=1, help='Use half precision mode')
 
     predict_group.add_argument('-l', '--load', type=str, help='The model used to predict')
     predict_group.add_argument('-i', '--input', type=str, help='The input data to predict')
@@ -119,7 +119,9 @@ def parse_args():
                 CONFIG["learning_rate"] = args.learning_rate
                 CONFIG["epochs"] = args.epochs
                 CONFIG["augment_boost"] = args.augment_boost
-                CONFIG["save_n_epoch"] = args.save_n_epoch
+                CONFIG["save_every_n_epoch"] = args.save_every_n_epoch
+                if args.weight_decay:
+                    CONFIG["weight_decay"] = args.weight_decay
 
     if args.wandb:
         CONFIG["wandb"] = True
@@ -136,7 +138,10 @@ if __name__ == '__main__':
     create_dirs(CONFIG["save"]["predict_dir"])
     create_dirs(CONFIG["save"]["model_dir"])
 
-    net = select_model(CONFIG["model"], in_channels=CONFIG["private"]["in_channels"], n_classes=CONFIG["private"]["n_classes"])
+    net = select_model(CONFIG["model"],
+                       in_channels=CONFIG["private"]["in_channels"],
+                       n_classes=CONFIG["private"]["n_classes"],
+                       use_bilinear=True)
     if CONFIG["predict"]:
         if os.path.isdir(CONFIG["input"]):
             input_dir = Path(CONFIG["input"])
@@ -157,13 +162,10 @@ if __name__ == '__main__':
                                         num_workers=0)  # type: ignore
 
     if CONFIG["test"]:
-        metrics = ['mIoU', 'accuracy', 'f1', 'dice']
+        metrics = ['mIoU', 'accuracy', 'f1', 'recall', 'dice']
         test(net, test_loader, device=CONFIG["device"], classes=CONFIG["private"]["classes"], selected_metrics=metrics)
         sys.exit(0)
 
-    train(net, train_loader, valid_loader if len(valid_loader) > 0 else None, device=CONFIG["device"],
-          epochs=CONFIG["epochs"],
-          save_n_epoch=CONFIG["save_n_epoch"],
-          learning_rate=CONFIG["learning_rate"],
-          n_classes=CONFIG["private"]["n_classes"],
-          weight_decay=1e-8)
+    train(net, train_loader, valid_loader if len(valid_loader) > 0 else None,
+          device=CONFIG["device"],
+          n_classes=CONFIG["private"]["n_classes"])
