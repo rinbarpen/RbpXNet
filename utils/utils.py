@@ -4,6 +4,7 @@ from typing import Union, Tuple, List
 
 import numpy as np
 import torch
+
 from models.unet.unet import UNet, UNetOriginal
 
 
@@ -40,10 +41,7 @@ def create_dirs(path: str) -> None:
     Returns:
     None
     """
-    if os.path.exists(path):
-        return
-
-    os.makedirs(path)
+    os.makedirs(path, exist_ok=True)
 
 
 def create_file_parents(filename: str) -> None:
@@ -59,9 +57,7 @@ def create_file_parents(filename: str) -> None:
     None
     """
     dirname = os.path.dirname(filename)
-    if os.path.exists(filename) or os.path.exists(dirname):
-        return
-    os.makedirs(dirname)
+    os.makedirs(dirname, exist_ok=True)
 
 
 def create_file_if_not_exist(filename: str) -> None:
@@ -106,22 +102,22 @@ def save_model(filename, model, optimizer=None, lr_scheduler=None, scaler=None, 
     Returns:
     None
     """
-    try:
-        checkpoint = dict()
-        checkpoint["model"] = model.state_dict()
-        if optimizer:
-            checkpoint["optimizer"] = optimizer.state_dict()
-        if lr_scheduler:
-            checkpoint["lr_scheduler"] = lr_scheduler.state_dict()
-        if scaler:
-            checkpoint["scaler"] = scaler.state_dict()
-        for k, v in kwargs.items():
-            checkpoint[k] = v
+    checkpoint = dict()
+    checkpoint["model"] = model.state_dict()
+    if optimizer:
+        checkpoint["optimizer"] = optimizer.state_dict()
+    if lr_scheduler:
+        checkpoint["lr_scheduler"] = lr_scheduler.state_dict()
+    if scaler:
+        checkpoint["scaler"] = scaler.state_dict()
+    for k, v in kwargs.items():
+        checkpoint[k] = v
 
+    try:
         torch.save(checkpoint, filename)
     except FileNotFoundError:
         create_file_parents(filename)
-        torch.save(model.state_dict(), filename)
+        torch.save(checkpoint, filename)
 
 
 def load_model(filename: str, device: torch.device) -> dict:
@@ -149,6 +145,12 @@ def load_model(filename: str, device: torch.device) -> dict:
     except Exception as e:
         logging.error(f'Error loading model: {e}')
         raise e
+
+
+from pprint import pprint
+def print_model_info(model_src: str, output_stream: pprint.IO[str]):
+    checkpoint = load_model(model_src, torch.device("cpu"))
+    pprint(checkpoint, stream=output_stream)
 
 
 def save_data(filename: str, data: Union[np.ndarray, torch.Tensor]) -> None:
@@ -193,7 +195,7 @@ def list2tuple(l: List):
 
 
 def select_model(model: str, *args, **kwargs):
-    match (model):
+    match model:
         case 'UNet':
             return UNet(kwargs['in_channels'], kwargs['n_classes'], kwargs['use_bilinear'])
         case 'UNetOriginal':
@@ -202,16 +204,7 @@ def select_model(model: str, *args, **kwargs):
             raise ValueError(f'Not supported model: {model}')
 
 
-def do_if(condition, fn, *args, **kwargs):
-    if condition:
-        return fn(args, kwargs)
-    return None
-
-def do_if_not(condition, fn, *args, **kwargs):
-    if not condition:
-        return fn(args, kwargs)
-    return None
-
-def where(condition, true_fn, false_fn):
-    return true_fn() if condition else false_fn()
-
+def fix_dir_tail(dirpath: str):
+    if not dirpath.endswith('/'):
+        return dirpath + '/'
+    return dirpath

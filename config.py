@@ -16,7 +16,11 @@ CONFIG = {
     },
     # for common
     "device": "cuda",
-    "amp": False,
+    "memory": {
+        "only_fp16": False, # for the scene -- network is lack of memory
+        "amp": False, # enable mixed precision if true (fp16, fp32)
+    },
+    "multi-gpu": False, # enable multi-gpu to [train | test | predict] network
     # for training
     "batch_size": 1, # also for testing
     "data_dir": "", # also for testing

@@ -1,8 +1,9 @@
-from typing import List
+from typing import List, Union, Literal, Optional
 
 import numpy as np
 
 from .scores import dice_score, iou_score, precision_score, recall_score, f1_score, accuracy_score
+from ..visualization import draw_metrics_graph
 
 
 def get_metrics(targets: np.ndarray, preds: np.ndarray, labels: List[str],
@@ -38,3 +39,32 @@ def get_metrics(targets: np.ndarray, preds: np.ndarray, labels: List[str],
         results['dice'] = dice_score(targets, preds, n_classes)
 
     return results
+
+class MetricRecoder:
+    def __init__(self, **kwargs):
+        super(MetricRecoder, self).__init__()
+
+        self.metrics = dict()
+
+    def add_metric(self, name: str, value: float):
+        if name not in self.metrics:
+            self.metrics[name] = [value]
+        else:
+            self.metrics[name].append(value)
+
+        return self
+
+    def get_metric(self, name: str, mode: str=Literal['mean', 'sum', 'all'], dtype=np.float32):
+        if mode == 'mean':
+            return np.mean(self.metrics[name], dtype=dtype)
+        elif mode == 'all':
+            return np.ndarray(self.metrics[name], dtype=dtype)
+        elif mode == 'sum':
+            return np.sum(self.metrics[name], dtype=dtype)
+
+    def get_all_metrics(self):
+        return self.metrics
+
+    def draw_graph(self, metrics_select: List[str], filename: Optional[str] = None):
+        colors = ["red", "green", "blue", "yellow", "purple", "orange", "brown"]
+        draw_metrics_graph(self.metrics, colors=colors, filename=filename, selected=metrics_select, title="Metrics")

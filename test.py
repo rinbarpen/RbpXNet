@@ -12,12 +12,12 @@ from utils.visualization import draw_metrics_graph
 from utils.writer import CSVWriter
 
 
-def test_model(model, device, test_loader,
+def test_model(net, device, test_loader,
                classes: List[str], selected_metrics: List[str] = ["dice", "f1", "recall"]):
     assert len(classes) >= 1, 'predict the number of classes should be greater than 0'
 
-    model.to(device)
-    model.eval()
+    net.to(device)
+    net.eval()
 
     mean_metrics = dict()
     n_step = len(test_loader)
@@ -26,7 +26,7 @@ def test_model(model, device, test_loader,
             for inputs, targets in test_loader:
                 inputs, targets = inputs.to(device, dtype=torch.float32), targets.to(device, dtype=torch.float32)
 
-                preds = model(inputs)
+                preds = net(inputs)
 
                 threshold = 0.5
                 preds[preds >= threshold] = 1
@@ -58,12 +58,12 @@ def test_model(model, device, test_loader,
 
 def test(net, test_loader, device, classes: List[str], selected_metrics: List[str]):
     """
-    This function tests a deep learning model using a given test dataset.
+    This function tests a deep learning net using a given test dataset.
 
     Parameters:
     - net: The deep learning model to be tested.
     - test_loader: A DataLoader object for the test dataset.
-    - device: The device (CPU or GPU) to run the model on.
+    - device: The device (CPU or GPU) to run the net on.
     - classes: A list of class names for the dataset.
 
     Returns:
@@ -80,7 +80,6 @@ def test(net, test_loader, device, classes: List[str], selected_metrics: List[st
                          classes=classes,
                          selected_metrics=selected_metrics)
 
-    # FIXME: No value saved
     from config import CONFIG
     test_csv_filename = f"{CONFIG['save']['test_dir']}test_metrics.csv"
     writer = CSVWriter(test_csv_filename)

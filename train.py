@@ -3,11 +3,11 @@ import os.path
 from torch import nn, optim
 
 from evaluate import *
+from utils.metrics.losses import dice_loss
 from utils.utils import *
 from utils.visualization import *
 from utils.writer import CSVWriter
 
-from torch.functional import F
 
 def train_one_epoch(model, device, epoch, train_loader, optimizer, criterion):
     model.train()
@@ -18,9 +18,9 @@ def train_one_epoch(model, device, epoch, train_loader, optimizer, criterion):
             optimizer.zero_grad()
             inputs, targets = inputs.to(device, dtype=torch.float32), targets.to(device, dtype=torch.float32)
 
-            preds = model(inputs)
+            outputs = model(inputs)
 
-            loss = criterion(F.sigmoid(preds), targets)
+            loss = criterion(outputs, targets) + dice_loss(targets, outputs, 2)['average']
             loss.backward()
 
             optimizer.step()
@@ -114,7 +114,7 @@ def train(net, train_loader, valid_loader, device, n_classes):
     train_csv_file = f"{CONFIG['save']['train_dir']}train_loss.csv"
     writer = CSVWriter(train_csv_file)
     writer.writes({'loss': train_losses}).flush()
-    logging.info(f"Save validate loss values to {os.path.abspath(train_csv_file)}")
+    logging.info(f"Save train loss values to {os.path.abspath(train_csv_file)}")
     if use_validate:
         valid_csv_file = f"{CONFIG['save']['valid_dir']}valid_loss.csv"
         writer = CSVWriter(valid_csv_file)

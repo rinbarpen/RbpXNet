@@ -69,8 +69,7 @@ class PolypGen2021Dataset(Dataset):
         mask = Image.fromarray(mask_np, mode='L')
 
         if self.transforms:
-            img, mask = self.transforms[0](img), self.transforms[1](mask)
-
+            img, mask = self.transforms(img), self.transforms(mask)
 
         return img, mask
 

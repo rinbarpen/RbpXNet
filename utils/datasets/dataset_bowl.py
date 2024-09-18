@@ -64,14 +64,14 @@ class Bowl2018Dataset(Dataset):
             masks.append(mask)
 
         if self.transforms:
-            img = self.transforms[0](img)
-            masks = [self.transforms[1](mask) for mask in masks]
+            img = self.transforms(img)
+            masks = [self.transforms(mask) for mask in masks]
 
         return img, masks
 
     @staticmethod
     def get_train_valid_and_test(bowl_dir, train_valid_test: List[float], transforms=None):
-        train_set = Bowl2018Dataset(bowl_dir, 'train', train_valid_test, transforms=transforms)
-        valid_set = Bowl2018Dataset(bowl_dir, 'valid', train_valid_test, transforms=transforms)
-        test_set  = Bowl2018Dataset(bowl_dir, 'test',  train_valid_test, transforms=transforms)
+        train_set = Bowl2018Dataset(bowl_dir, 'train', train_valid_test, transforms=transforms[0])
+        valid_set = Bowl2018Dataset(bowl_dir, 'valid', train_valid_test, transforms=transforms[0])
+        test_set  = Bowl2018Dataset(bowl_dir, 'test',  train_valid_test, transforms=transforms[1])
         return (train_set, valid_set, test_set)

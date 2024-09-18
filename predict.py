@@ -6,9 +6,8 @@ from typing import List
 import numpy as np
 import torch
 from PIL import Image
-from torch.functional import F
 
-from utils.utils import load_model
+from utils.utils import load_model, create_dirs
 from utils.visualization import draw_attention_heat_graph, draw_heat_graph
 
 
@@ -32,38 +31,48 @@ def predict_one(net, input: Path, classes: List[str], device):
     from config import CONFIG
     net.load_state_dict(load_model(CONFIG['load'], device=device)['model'])
 
-    input = Image.open(input).convert('RGB')
-    original_size = input.size # (W, H)
+    # input = Image.open(input).convert('RGB')
+    # original_size = input.size # (W, H)
+    # input = input.resize((512, 512))  # TODO: to be more flexible
+    # input = torch.from_numpy(np.array(input).transpose(2, 0, 1))
 
-    input = input.resize((512, 512))  # TODO: to be more flexible
-    input = torch.from_numpy(np.array(input).transpose(2, 1, 0))
+    input = Image.open(input).convert('L')
+    original_size = input.size
+    input = input.resize((512, 512))
+    input = torch.from_numpy(np.array(input))
 
-    input = input.unsqueeze(0) # (1, 3, H, W)
+    input = input.unsqueeze(0).unsqueeze(0) # (1, 1, 512, 512)
     net, input = net.to(device, dtype=torch.float32), input.to(device, dtype=torch.float32)
 
     net.eval()
     with torch.no_grad():
         predict = net(input)  # (1, N, H, W)
 
-        # predict = (predict - predict.min()) / (predict.max() - predict.min())
-        predict = F.sigmoid(predict)
+        predict = (predict - predict.min()) / (predict.max() - predict.min())
         predict = predict.squeeze(0)
         possibilities = predict.cpu().detach().numpy()  # (N, H, W)
-        possibilities = possibilities.transpose(0, 2, 1)
         predict_image = possibilities.copy()  # (N, H, W)
-        threshold = 0.5
-        predict_image[predict_image >= threshold] = 255
-        predict_image[predict_image < threshold] = 0
+
+        predict_image[predict_image >= 0.5] = 255
+        predict_image[predict_image < 0.5] = 0
         predict_image = predict_image.astype(np.uint8)
 
     assert predict_image.shape[0] == len(classes), "The number of classes should be equal to the number of ones predicted"
     result = dict()
     for i, name in enumerate(classes):
-        image = Image.fromarray(predict_image[i], mode='L').resize(size=original_size)
+        possibility = possibilities[i]
+        mask = Image.fromarray(predict_image[i], mode='L').resize(size=original_size)
         result[name] = {
-            "possibility": possibilities[i],
-            "image": image,
+            "possibility": possibility,
+            "mask": mask,
         }
+    # background_mask = (1.0 - possibilities.max())
+    # background_mask[background_mask >= 0.5] = 0
+    # background_mask[background_mask < 0.5] = 255
+    # result['background'] = {
+    #     "possibility": 1.0 - possibilities.max(dim=0),
+    #     "mask": Image.fromarray(background_mask, mode='L').resize(size=original_size)
+    # }
     return result
 
 
@@ -112,24 +121,30 @@ def predict(net, inputs: List[Path], classes: List[str], device):
     for input in inputs:
         result = predict_one(net, input, classes=classes, device=device)
 
+        predict_dir = CONFIG["save"]["predict_dir"]
+        filename = input.stem
+        predict_filename = f"{filename}_predict.png"
+        heat_filename = f"{filename}_heat.png"
+        fuse_filename = f"{filename}_fuse.png"
         for category, values in result.items():
-            predict_dir = CONFIG["save"]["predict_dir"]
-            filename = input.stem
-            predict_filename = f"{filename}_{category}_predict.png"
-            heat_filename = f"{filename}_{category}_heat.png"
-            fuse_filename = f"{filename}_{category}_fuse.png"
-            predict_path = f"{predict_dir}{predict_filename}"
-            heat_path = f"{predict_dir}{heat_filename}"
-            fuse_path = f"{predict_dir}{fuse_filename}"
+            category_dir = f"{predict_dir}{category}/"
+            predict_path = f"{category_dir}{predict_filename}"
+            heat_path = f"{category_dir}{heat_filename}"
+            fuse_path = f"{category_dir}{fuse_filename}"
 
-            values["image"].save(predict_path)
+            create_dirs(category_dir)
+
+            possibility = values["possibility"]
+            mask_image = values["mask"]
+            mask_image.save(predict_path)
+            original_image = Image.open(input).convert('L')
             logging.info(f"Save predicted image to {os.path.abspath(predict_path)}")
-            draw_heat_graph(values["possibility"],
+            draw_heat_graph(possibility,
                             filename=heat_path,
                             title=filename)
             logging.info(f"Save heat graph to {os.path.abspath(heat_path)}")
-            draw_attention_heat_graph(values["image"],
-                                      Image.open(input).convert('RGB'),
+            draw_attention_heat_graph(mask_image,
+                                      original_image,
                                       filename=fuse_path,
                                       title=filename)
             logging.info(f"Save attention image to {os.path.abspath(fuse_path)}")

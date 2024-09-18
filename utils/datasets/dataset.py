@@ -18,28 +18,11 @@ def support_datasets():
     return 'ISIC2017 ISIC2018 ISIC2019 POLYPGEN2021 BOWL2018 DRIVE'.split()
 
 
-def get_train_valid_and_test_loader(dataset_name, dataset_dir, batch_size, train_valid_test: List[float], use_augment_enhance=True, resize=(512, 512), num_workers=0):
-    boost_transform_group = (
-        Transforms.TransformBuilder(resize)
-        .rotation(0.0)
-        .horizon_flip()
-        .vertical_flip()
-        .tensorize()
-        # .normalize(True)
-        .build(),
-        Transforms.TransformBuilder(resize)
-        .rotation(0.0)
-        .horizon_flip()
-        .vertical_flip()
-        .tensorize()
-        .build())
-    default_transform_group = (
-        Transforms.TransformBuilder(resize)
-        .tensorize()
-        .build(),
-        Transforms.TransformBuilder(resize)
-        .tensorize()
-        .build())
+def get_train_valid_and_test_loader(dataset_name, dataset_dir, batch_size,
+                                    train_valid_test: List[float],
+                                    use_augment_enhance=True, resize=(512, 512), num_workers=0):
+    boost_transform_group = Transforms.TransformBuilder().resize(resize).horizon_flip().vertical_flip().tensorize().build()
+    default_transform_group = Transforms.TransformBuilder().resize(resize).tensorize().build()
 
     select_transform_group = (boost_transform_group if use_augment_enhance else default_transform_group, default_transform_group)
 

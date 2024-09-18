@@ -1,5 +1,7 @@
-from typing import Tuple
+from typing import Tuple, Union
 
+import numpy as np
+import torch
 from PIL import Image
 from sympy import transpose
 from torchvision import transforms
@@ -9,18 +11,23 @@ class BoostTransform:
     def __init__(self, transform):
         self.transform = transform
 
-    def __call__(self, image: Image.Image):
+    def __call__(self, image: Union[Image.Image, np.ndarray, torch.Tensor]):
         return self.transform(image)
 
 
 class TransformBuilder:
-    def __init__(self, resize: Tuple[int, int]):
-        self._resize = resize
+    def __init__(self):
+        self._to_PILImage = False
+        self._resize = None
         self._rotation = 0.0
         self._horizon_flip = False
         self._vertical_flip = False
         self._tensorize = False
         self._norm = dict()
+
+    def resize(self, resize: Tuple[int, int]):
+        self._resize = resize
+        return self
 
     def rotation(self, rotation: float):
         self._rotation = rotation
@@ -53,10 +60,21 @@ class TransformBuilder:
         self._norm["std"] = [0.5]
         return self
 
+    def to_PILImage(self):
+        self._to_PILImage = True
+        return self
+
     def build(self):
-        transform = [
-            transforms.Resize(self._resize)
-        ]
+        transform = []
+        if self._to_PILImage:
+            transform.append(
+                transforms.ToPILImage()
+            )
+
+        if self._resize:
+            transform.append(
+                transforms.Resize(self._resize)
+            )
 
         if self._horizon_flip:
             transform.append(
@@ -84,13 +102,14 @@ class TransformBuilder:
 
 def get_rgb_image_transform(resize, rotation=0.0, flip=True):
     if flip:
-        return TransformBuilder(resize).rotation(rotation).horizon_flip().vertical_flip().tensorize().normalize().build()
+        return TransformBuilder(resize).rotation(
+            rotation).horizon_flip().vertical_flip().tensorize().normalize().build()
     else:
         return TransformBuilder(resize).rotation(rotation).tensorize().normalize().build()
+
 
 def get_mask_transform(resize, rotation=0.0, flip=True):
     if flip:
         return TransformBuilder(resize).rotation(rotation).horizon_flip().vertical_flip().tensorize().build()
     else:
         return TransformBuilder(resize).rotation(rotation).tensorize().build()
-
