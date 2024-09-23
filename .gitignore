@@ -37,3 +37,5 @@ utils/datasets/__pycache__/dataset.cpython-310.pyc
 /.vs
 /tests
 *.env
+/.idea
+/.vscode
