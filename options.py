@@ -1,13 +1,17 @@
-import json
 import logging
 from argparse import ArgumentParser
 
 import torch
-import wandb
-import yaml
+from typing import Literal
+from enum import Enum
 
-from utils.utils import fix_dir_tail
+from utils.utils import create_dirs, fix_dir_tail
 
+def check_args(args):
+    if args.config:
+        ext = args.config.splitext(args.config)[1]
+        if ext not in ['json', 'yaml', 'yml', 'toml']:
+            raise ValueError(f'Unsupported config file format: {ext}')
 
 def parse_args():
     """
@@ -34,6 +38,7 @@ def parse_args():
     general_group.add_argument('--entity', type=str, help='Entity Name')
     general_group.add_argument('--test', action='store_true', help='Test the model')
     general_group.add_argument('--predict', action='store_true', help='Predict the model')
+    general_group.add_argument('--train', action='store_true', help='Train the model')
     general_group.add_argument('--wandb', action='store_true', help='Launch Wandb instance')
 
     model_group.add_argument('-m', '--model', type=str, help='Model to train')
@@ -57,7 +62,8 @@ def parse_args():
     predict_group.add_argument('-i', '--input', type=str, help='The input data to predict')
 
     args = parser.parse_args()
-
+    check_args(args)
+    
     if not torch.cuda.is_available() and args.gpu:
         logging.warning('No GPU found, training will be performed on CPU.')
     device = 'cuda' if args.gpu and torch.cuda.is_available() else 'cpu'
@@ -70,14 +76,19 @@ def parse_args():
 
     if args.config:
         ext = args.config.splitext(args.config)[1]
-        if ext in ['json']:
-            with open(args.config, 'r') as f:
-                CONFIG = json.load(f)
-        elif ext in ['yaml' 'yml']:
-            with open(args.config, 'r') as f:
-                CONFIG = yaml.safe_load(f)
-        else:
-            raise ValueError(f'Unsupported config file format: {ext}')
+        match ext:
+            case 'json':
+                import json
+                with open(args.config, 'r') as f:
+                    CONFIG = json.load(f)
+            case 'yaml'|'yml':
+                import yaml
+                with open(args.config, 'r') as f:
+                    CONFIG = yaml.safe_load(f)
+            case 'toml':
+                import toml
+                with open(args.config, 'r') as f:
+                    CONFIG = toml.load(f)
     else:
         classes = args.classes.split(',')
         classes = [c.strip() for c in classes]
@@ -102,7 +113,6 @@ def parse_args():
                 CONFIG["test"] = True
             else:
                 CONFIG["train"] = True
-                CONFIG["batch_size"] = args.batch_size
                 CONFIG["learning_rate"] = args.learning_rate
                 CONFIG["epochs"] = args.epochs
                 CONFIG["augment_boost"] = args.augment_boost
@@ -118,6 +128,30 @@ def parse_args():
     CONFIG["save"]["model_dir"] = fix_dir_tail(CONFIG["save"]["model_dir"])
 
     if args.wandb:
+        import wandb
         CONFIG["wandb"] = True
         wandb.init(project=args.project,
                    config=CONFIG)
+    
+    create_dirs(CONFIG["save"]["train_dir"])
+    create_dirs(CONFIG["save"]["valid_dir"])
+    create_dirs(CONFIG["save"]["test_dir"])
+    create_dirs(CONFIG["save"]["predict_dir"])
+    create_dirs(CONFIG["save"]["model_dir"])
+
+
+def dump_config(filename, file_type: Literal['json', 'yaml', 'yml', 'toml']):
+    from config import CONFIG
+    match file_type:
+        case 'json':
+            import json
+            with open(filename, 'w') as f:
+                json.dump(CONFIG, f)
+        case 'yaml'|'yml':
+            import yaml
+            with open(filename, 'w') as f:
+                yaml.dump(CONFIG, f)
+        case 'toml':
+            import toml
+            with open(filename, 'w') as f:
+                toml.dump(CONFIG, f)

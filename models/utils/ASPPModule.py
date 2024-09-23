@@ -1,6 +1,6 @@
 import torch
 from torch import nn
-from torch.functional import F
+from torch import functional as F
 
 
 class ASPPConv(nn.Module):
@@ -33,7 +33,7 @@ class ASPPooling(nn.Module):
         x = self.conv(x)
         x = self.bn(x)
         x = self.relu(x)
-        x = F.interpolate(x, size=size, mode='bilinear', align_corners=False)
+        x = F.interpolate(x, size=size, mode='bilinear', align_corners=False) # type: ignore
         return x
 
 class ASPPModule(nn.Module):

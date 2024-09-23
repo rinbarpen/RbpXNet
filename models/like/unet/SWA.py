@@ -2,14 +2,11 @@ import math
 
 import torch
 from torch import nn
-from torch.functional import F
+from torch import functional as F
 from torch.nn import ModuleList
 from torchvision.models import resnet18, vgg19
 
-
 from models.Attention import VisionAgentAttention, VisionLinearAttention
-
-GUILD4 = True
 
 
 class EnhanceBlock(nn.Module):
@@ -140,12 +137,15 @@ class UNet(nn.Module):
                               [512, 512, 512, 512]]
         self.vaa_list = nn.ModuleList()
         for qkva_channels in qkva_channels_list:
-            self.vaa_list.append(VisionAgentAttention(
+            self.vaa_list.append(
+                VisionAgentAttention(
                 patch_size=patch_size,
                 qkva_channels=qkva_channels,
                 hidden_dim=hidden_dim,
                 num_heads=num_heads,
-                dropout=dropout))
+                dropout=dropout
+                )
+            )
 
 
     def forward(self, x):
@@ -160,31 +160,25 @@ class UNet(nn.Module):
         y = self.down4(x4)
         y = self.bottleneck(y)
         y = self.up1(y)
-        agent = x4.copy() if GUILD4 else x1.copy()
-        # x4 = x4 + self.agent_attention(x4, x1, x2, x3)
+
+        agent = x4
         x4 = x4 + self.skipway_agent_self_attention(x4, agent, 4)
         y = torch.concat([y, x4], dim=1)
         y = self.conv5(y)
         y = self.up2(y)
-        # x3 = x3 + self.agent_attention(x3, x1, x2, x4)  # broadcast to (B, C, 64, 64)
         x3 = x3 + self.skipway_agent_self_attention(x3, agent, 3)
         y = torch.concat([y, x3], dim=1)
         y = self.conv6(y)
         y = self.up3(y)
-        # x2 = x2 + self.agent_attention(x2, x1, x3, x4)
         x2 = x2 + self.skipway_agent_self_attention(x2, agent, 2)
         y = torch.concat([y, x2], dim=1)
         y = self.conv7(y)
         y = self.up4(y)
-        # x1 = x1 + self.agent_attention(x1, x2, x3, x4)
         x1 = x1 + self.skipway_agent_self_attention(x1, agent, 1)
         y = torch.concat([y, x1], dim=1)
         y = self.conv8(y)
         y = self.out_conv(y)
         return y
-
-    def skipway_agent_attention(self, q, k, v, a):
-        raise NotImplementedError("This is not implemented yet.")
 
     def skipway_agent_self_attention(self, qkv, a, i):
         x = self.vaa_list[i].forward(qkv, qkv, qkv, a)

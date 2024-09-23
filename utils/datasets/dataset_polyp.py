@@ -63,7 +63,7 @@ class PolypGen2021Dataset(Dataset):
         img = Image.open(img_path).convert('RGB')
         mask = Image.open(mask_path).convert('L')
 
-        mask_np = np.array(mask)
+        mask_np = np.array(mask, dtype=np.float32)
         if mask_np.max() > 1:
             mask_np = mask_np / 255
         mask = Image.fromarray(mask_np, mode='L')
@@ -76,6 +76,9 @@ class PolypGen2021Dataset(Dataset):
     @staticmethod
     def get_train_valid_and_test(polyp_dir, valid_ratio, transforms=None):
         train_set = PolypGen2021Dataset(polyp_dir, 'train', valid_ratio=valid_ratio, transforms=transforms[0])
-        valid_set = PolypGen2021Dataset(polyp_dir, 'valid', valid_ratio=valid_ratio, transforms=transforms[0])
+        if valid_ratio > 0.0:
+            valid_set = PolypGen2021Dataset(polyp_dir, 'valid', valid_ratio=valid_ratio, transforms=transforms[0])
+        else:
+            valid_set = None
         test_set = PolypGen2021Dataset(polyp_dir, 'test', valid_ratio=valid_ratio, transforms=transforms[1])
         return (train_set, valid_set, test_set)

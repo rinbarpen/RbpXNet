@@ -1,9 +1,8 @@
-from typing import Tuple, Union
+from typing import Tuple, Union, TypedDict
 
 import numpy as np
 import torch
 from PIL import Image
-from sympy import transpose
 from torchvision import transforms
 
 
@@ -14,6 +13,9 @@ class BoostTransform:
     def __call__(self, image: Union[Image.Image, np.ndarray, torch.Tensor]):
         return self.transform(image)
 
+class NormDict(TypedDict):
+    mean: list[float]
+    std: list[float]
 
 class TransformBuilder:
     def __init__(self):
@@ -23,7 +25,7 @@ class TransformBuilder:
         self._horizon_flip = False
         self._vertical_flip = False
         self._tensorize = False
-        self._norm = dict()
+        self._norm = NormDict()
 
     def resize(self, resize: Tuple[int, int]):
         self._resize = resize
@@ -43,7 +45,7 @@ class TransformBuilder:
 
     def tensorize(self):
         self._tensorize = True
-        return self
+        return self 
 
     def normalize(self, mean, std):
         self._norm["mean"] = mean
@@ -67,25 +69,18 @@ class TransformBuilder:
     def build(self):
         transform = []
         if self._to_PILImage:
-            transform.append(
-                transforms.ToPILImage()
-            )
+            transform.append(transforms.ToPILImage())
 
         if self._resize:
-            transform.append(
-                transforms.Resize(self._resize)
-            )
+            transform.append(transforms.Resize(self._resize))
 
         if self._horizon_flip:
-            transform.append(
-                transforms.RandomHorizontalFlip())
+            transform.append(transforms.RandomHorizontalFlip())
         if self._vertical_flip:
-            transform.append(
-                transforms.RandomVerticalFlip())
+            transform.append(transforms.RandomVerticalFlip())
 
         if self._rotation != 0.0:
-            transform.append(
-                transforms.RandomRotation(self._rotation))
+            transform.append(transforms.RandomRotation(self._rotation))
 
         if self._tensorize:
             transform.append(
@@ -94,22 +89,26 @@ class TransformBuilder:
 
         if self._norm:
             transform.append(
-                transforms.Normalize(mean=self._norm['mean'], std=self._norm['std'])
+                transforms.Normalize(mean=self._norm["mean"], std=self._norm["std"])
             )
 
         return BoostTransform(transforms.Compose(transform))
 
 
-def get_rgb_image_transform(resize, rotation=0.0, flip=True):
+def get_rgb_image_transform(resize: Tuple[int, int], rotation=0.0, flip=True, norm=True):
+    trans = TransformBuilder().resize(resize).rotation(rotation)
     if flip:
-        return TransformBuilder(resize).rotation(
-            rotation).horizon_flip().vertical_flip().tensorize().normalize().build()
-    else:
-        return TransformBuilder(resize).rotation(rotation).tensorize().normalize().build()
+        trans = trans.horizon_flip().vertical_flip()
+    trans = trans.tensorize()
+    if norm:
+        trans = trans.norm_rgb()
+    return trans.build()
 
-
-def get_mask_transform(resize, rotation=0.0, flip=True):
+def get_mask_transform(resize: Tuple[int, int], rotation=0.0, flip=True, norm=True):
+    trans = TransformBuilder().resize(resize).rotation(rotation)
     if flip:
-        return TransformBuilder(resize).rotation(rotation).horizon_flip().vertical_flip().tensorize().build()
-    else:
-        return TransformBuilder(resize).rotation(rotation).tensorize().build()
+        trans = trans.horizon_flip().vertical_flip()
+    trans = trans.tensorize()
+    if norm:
+        trans = trans.norm_gray()
+    return trans.build()

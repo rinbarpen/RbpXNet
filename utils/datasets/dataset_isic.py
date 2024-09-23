@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Literal, List
+from typing import Literal, List, Tuple
 
 import numpy as np
 import pandas as pd
@@ -43,7 +43,7 @@ class ISIC2017Dataset(Dataset):
         img = Image.open(img_path).convert('RGB')
         mask = Image.open(mask_path).convert('L')
 
-        mask_np = np.array(mask)
+        mask_np = np.array(mask, dtype=np.float32)
         if mask_np.max() > 1:
             mask_np = mask_np / 255
         mask = Image.fromarray(mask_np, mode='L')
@@ -98,7 +98,7 @@ class ISIC2018Dataset(Dataset):
         img = Image.open(img_path).convert('RGB')
         mask = Image.open(mask_path).convert('L')
 
-        mask_np = np.array(mask)
+        mask_np = np.array(mask, dtype=np.float32)
         if mask_np.max() > 1:
             mask_np = mask_np / 255
         mask = Image.fromarray(mask_np, mode='L')
@@ -117,7 +117,7 @@ class ISIC2018Dataset(Dataset):
 
 
 class ISIC2019Dataset(Dataset):
-    def __init__(self, isic_dir, split: Literal['train', 'test', 'valid'], train_valid_test: List[float], transforms=None):
+    def __init__(self, isic_dir, split: Literal['train', 'test', 'valid'], train_valid_test: Tuple[float, float, float], transforms=None):
         super(ISIC2019Dataset, self).__init__()
         self.isic_dir = Path(isic_dir)
         self.transforms = transforms
@@ -128,7 +128,7 @@ class ISIC2019Dataset(Dataset):
         self.label_df = pd.read_csv(self.images_dir / 'ISIC_2019_Training_GroundTruth')
 
 
-    def _get_images(self, split: Literal['train', 'test', 'valid'], train_valid_test: List[float]):
+    def _get_images(self, split: Literal['train', 'test', 'valid'], train_valid_test: Tuple[float, float, float]):
         full_images = sorted([f for f in self.images_dir.glob('*.jpg')])
         n = len(full_images)
         if split == 'train':
@@ -158,8 +158,11 @@ class ISIC2019Dataset(Dataset):
         return image, label
 
     @staticmethod
-    def get_train_valid_and_test(isic_dir, train_valid_test:List[float], transforms=None):
+    def get_train_valid_and_test(isic_dir, train_valid_test: Tuple[float, float, float], transforms=None):
         train_set = ISIC2019Dataset(isic_dir, 'train', train_valid_test, transforms=transforms[0])
-        valid_set = ISIC2019Dataset(isic_dir, 'valid', train_valid_test, transforms=transforms[0])
+        if train_valid_test[1] > 0.0:
+            valid_set = ISIC2019Dataset(isic_dir, 'valid', train_valid_test, transforms=transforms[0])
+        else:
+            valid_set = None
         test_set  = ISIC2019Dataset(isic_dir, 'test', train_valid_test, transforms=transforms[1])
         return (train_set, valid_set, test_set)

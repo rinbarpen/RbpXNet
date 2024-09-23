@@ -47,7 +47,7 @@ def test_model(net, device, test_loader,
 
                 pbar.update()
                 pbar.set_postfix(**{
-                    'accuracy': repr(metrics['accuracy']['average'])
+                    'accuracy': metrics['accuracy']['average']
                 })
 
     for k in mean_metrics.keys():

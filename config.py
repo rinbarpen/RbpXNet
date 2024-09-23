@@ -14,6 +14,11 @@ CONFIG = {
         "n_classes": 1,
         "classes": [],
     },
+    "backbone": {
+        "vgg19": {
+            
+        }
+    },
     # for common
     "device": "cuda",
     "memory": {
@@ -44,9 +49,9 @@ CONFIG = {
     }
 }
 
+# ENVIRONMENT VARIABLES
 from dotenv import load_dotenv
 load_dotenv('.env')
 
-import os
-os.getenv('')
-# env = os.getenv('XXX-XXX')
+# GLOBAL CONSTANTS
+RESIZE = (512, 512)

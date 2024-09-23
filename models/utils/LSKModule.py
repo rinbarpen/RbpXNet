@@ -1,6 +1,6 @@
 import torch
 from torch import nn
-from torch.functional import F
+from torch import functional as F
 
 from typing import *
 
@@ -77,8 +77,8 @@ class LSKModule(nn.Module):
         return o
 
     def spatial_attention(self, x):
-        avg = F.adaptive_avg_pool2d(x, 1)
-        max = F.adaptive_max_pool2d(x, 1)
+        avg = F.adaptive_avg_pool2d(x, 1) # type: ignore
+        max = F.adaptive_max_pool2d(x, 1) # type: ignore
 
         x = torch.concat([avg, max], dim=1)
         x = self.sa(x)

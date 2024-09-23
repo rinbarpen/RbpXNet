@@ -1,0 +1,374 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="34b3f3c0-789f-47e4-a5b9-ec6ae2ac422a" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/../study/.idea/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../study/.idea/git_toolbox_blame.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../study/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../study/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../study/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../study/.idea/study.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../study/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../study/csvwriter.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../study/data/BadApple.mp4" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../study/data/BadApple.wav" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../study/data/sound of thunderstorm_耳聆网.mp3" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../study/ff_test.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../study/graph/attention_image.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../study/graph/possibility.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../study/hrtf.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../study/models.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../study/models/Embedding.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../study/models/myUnet/SelectiveSkipWayUNet.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../study/optimizer.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../study/sci.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../study/test.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../study/thinking/graph_walker.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../study/timm/a.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/predict.py" beforeDir="false" afterPath="$PROJECT_DIR$/predict.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/train.py" beforeDir="false" afterPath="$PROJECT_DIR$/train.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/datasets/dataset.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/datasets/dataset.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/datasets/dataset_bowl.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/datasets/dataset_bowl.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/datasets/dataset_drive.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/datasets/dataset_drive.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/datasets/dataset_isic.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/datasets/dataset_isic.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/datasets/dataset_polyp.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/datasets/dataset_polyp.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/visualization.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/visualization.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/writer.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/writer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../U-Net_v2/unet_v2/pvtv2.py" beforeDir="false" afterPath="$PROJECT_DIR$/../U-Net_v2/unet_v2/pvtv2.py" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;history&quot;: [
+    {
+      &quot;state&quot;: &quot;OPEN&quot;
+    }
+  ],
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/rinbarpen/RbpXNet.git&quot;,
+    &quot;accountId&quot;: &quot;46d873c4-1fd5-4f63-bb77-c58419132f7e&quot;
+  }
+}</component>
+  <component name="OptimizeOnSaveOptions">
+    <option name="myRunOnSave" value="true" />
+  </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 3
+}</component>
+  <component name="ProjectId" id="2l6axnZLL47cS5jhzP8WjfwfqsH" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Notification.DisplayName-DoNotAsk-Vcs Notifications&quot;: &quot;VCS 通知&quot;,
+    &quot;Notification.DoNotAsk-Vcs Notifications&quot;: &quot;true&quot;,
+    &quot;Python tests.TestMetrics.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for test_metrics.TestMetricsFunctions.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for test_metrics.TestMetricsFunctions.test_mIoU.executor&quot;: &quot;Run&quot;,
+    &quot;Python.Predict.executor&quot;: &quot;Run&quot;,
+    &quot;Python.Test.executor&quot;: &quot;Run&quot;,
+    &quot;Python.Train.executor&quot;: &quot;Run&quot;,
+    &quot;Python.graph_walker.executor&quot;: &quot;Debug&quot;,
+    &quot;Python.scores.executor&quot;: &quot;Run&quot;,
+    &quot;Python.step1_train.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;com.codeium.enabled&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;E:/Program/Projects/py/study2ai/study/Unet/unet_42-drive&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;
+  }
+}</component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="E:\Program\Projects\py\study2ai\study\Unet\unet_42-drive\model" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="E:\Program\Projects\py\study2ai\lab\KUNet\output\train" />
+      <recent name="E:\Program\Projects\py\study2ai\lab\KUNet" />
+      <recent name="E:\Program\Projects\py\study2ai\lab\KUNet\utils\metrics" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Python.Predict">
+    <configuration name="Predict" type="PythonConfigurationType" factoryName="Python">
+      <module name="KUNet" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="SDK_NAME" value="py310" />
+      <option name="WORKING_DIRECTORY" value="E:\Program\Projects\py\study2ai\lab\KUNet" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/main.py" />
+      <option name="PARAMETERS" value="--project Segment-DRIVE-Predict -m UNetOriginal --in_channels 1 --n_classes 1 --classes &quot;vein&quot; --gpu --predict --load &quot;output/best_model.pth&quot; --input &quot;I:/AI/Data/DRIVE/test/images&quot;" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Test" type="PythonConfigurationType" factoryName="Python">
+      <module name="KUNet" />
+      <option name="ENV_FILES" value="$PROJECT_DIR$/.env" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="SDK_NAME" value="py310" />
+      <option name="WORKING_DIRECTORY" value="E:\Program\Projects\py\study2ai\lab\KUNet" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/main.py" />
+      <option name="PARAMETERS" value="--project Segment-DRIVE-Test -m UNetOriginal --in_channels 3 --n_classes 1 --classes &quot;vein&quot; -b 1 --data_dir I:/AI/Data/ --dataset DRIVE --gpu --test" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Train" type="PythonConfigurationType" factoryName="Python">
+      <module name="KUNet" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="SDK_NAME" value="py310" />
+      <option name="WORKING_DIRECTORY" value="E:\Program\Projects\py\study2ai\lab\KUNet" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/main.py" />
+      <option name="PARAMETERS" value="--project Segment-DRIVE-Train -m UNetOriginal --in_channels 1 --n_classes 1 --classes &quot;vein&quot; -lr 3e-6 -e 40 -b 1 --data_dir &quot;I:/AI/Data/&quot; --dataset &quot;DRIVE&quot; --gpu --augment_boost" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="scores" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="KUNet" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/utils/metrics" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/utils/metrics/scores.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="TestDatasets" type="tests" factoryName="Unittests">
+      <module name="KUNet" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="D:/Program/Anaconda/envs/py310/python.exe" />
+      <option name="SDK_NAME" value="py310" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="_new_pattern" value="&quot;&quot;" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;$PROJECT_DIR$/tests/test_dataset.py&quot;" />
+      <option name="_new_targetType" value="&quot;PATH&quot;" />
+      <method v="2" />
+    </configuration>
+    <configuration name="TestMetrics" type="tests" factoryName="Unittests">
+      <module name="KUNet" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="D:/Program/Anaconda/envs/py310/python.exe" />
+      <option name="SDK_NAME" value="py310" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="_new_pattern" value="&quot;&quot;" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;$PROJECT_DIR$/tests/test_metrics.py&quot;" />
+      <option name="_new_targetType" value="&quot;PATH&quot;" />
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="Python.Test" />
+      <item itemvalue="Python.Predict" />
+      <item itemvalue="Python.Train" />
+      <item itemvalue="Python.scores" />
+      <item itemvalue="Python 测试.TestDatasets" />
+      <item itemvalue="Python 测试.TestMetrics" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.scores" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-python-sdk-abccbe9d933a-ba05f1cad1b1-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-242.20224.428" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="SvnConfiguration">
+    <configuration>C:\Users\lpout\AppData\Roaming\Subversion</configuration>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="34b3f3c0-789f-47e4-a5b9-ec6ae2ac422a" name="Changes" comment="" />
+      <created>1724503229642</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1724503229642</updated>
+    </task>
+    <task id="LOCAL-00001" summary="重组了metrics部分和模型的预测部分">
+      <option name="closed" value="true" />
+      <created>1724516222607</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1724516222607</updated>
+    </task>
+    <task id="LOCAL-00002" summary="rewrite mask process">
+      <option name="closed" value="true" />
+      <created>1724614229597</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1724614229597</updated>
+    </task>
+    <task id="LOCAL-00003" summary="remnant files">
+      <option name="closed" value="true" />
+      <created>1724614624098</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1724614624098</updated>
+    </task>
+    <task id="LOCAL-00004" summary="remnant files">
+      <option name="closed" value="true" />
+      <created>1724615382896</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1724615382896</updated>
+    </task>
+    <task id="LOCAL-00005" summary="remnant files">
+      <option name="closed" value="true" />
+      <created>1724664963770</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1724664963770</updated>
+    </task>
+    <task id="LOCAL-00006" summary="fix scores">
+      <option name="closed" value="true" />
+      <created>1725717295671</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1725717295671</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
+    <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="重组了metrics部分和模型的预测部分" />
+    <MESSAGE value="rewrite mask process" />
+    <MESSAGE value="remnant files" />
+    <MESSAGE value="fix scores" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix scores" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/../../study/Unet/unet_42-drive/model/SelectiveSkipWayUNet.py</url>
+          <line>201</line>
+          <option name="timeStamp" value="11" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/utils/visualization.py</url>
+          <line>148</line>
+          <option name="timeStamp" value="16" />
+        </line-breakpoint>
+      </breakpoints>
+      <default-breakpoints>
+        <breakpoint type="python-exception">
+          <properties notifyOnTerminate="true" exception="BaseException">
+            <option name="notifyOnTerminate" value="true" />
+          </properties>
+        </breakpoint>
+      </default-breakpoints>
+    </breakpoint-manager>
+  </component>
+</project>

@@ -1,9 +1,9 @@
 import torch
 from torch import nn
 
-from models.Attention import AgentAttention
-from models.PatchEmbedding import PatchEmbedding
-from models.PositionalEncoding import PositionalEncoding
+from .Attention import AgentAttention
+from .PatchEmbedding import PatchEmbedding
+from .PositionalEncoding import PositionalEncoding
 
 from kan import KANLayer
 
@@ -20,20 +20,6 @@ class MLP(nn.Module):
         x = self.relu(x)
         x = self.linear2(x)
         return x
-
-# class MLP(nn.Module):
-#     def __init__(self, channels, reduction):
-#         super(MLP, self).__init__()
-#
-#         self.conv1 = nn.Conv2d(channels, channels // reduction, kernel_size=1)
-#         self.relu = nn.ReLU(inplace=True)
-#         self.conv2 = nn.Conv2d(channels // reduction, channels, kernel_size=1)
-#
-#     def forward(self, x):
-#         x = self.conv1(x)
-#         x = self.relu(x)
-#         x = self.conv2(x)
-#         return x
 
 
 class VisionSelfAgentFormer(nn.Module):

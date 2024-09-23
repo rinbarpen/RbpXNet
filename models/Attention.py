@@ -1,22 +1,20 @@
 import torch
 from torch import nn
-from torch.functional import F
+from torch import functional as F
 from typing import List, Optional, Dict, Tuple
 
-from torch.nn.functional import dropout
-
-from models.PatchEmbedding import PatchEmbedding
-from models.PositionalEncoding import PositionalEncoding
+from .PatchEmbedding import PatchEmbedding
+from .PositionalEncoding import PositionalEncoding
 
 
 class VisionAttention(nn.Module):
     def __init__(
-            self,
-            patch_size: int,
-            qkv_channels: List[int],
-            hidden_dim: int,
-            num_heads: int,
-            dropout: float = 0.1,
+        self,
+        patch_size: int,
+        qkv_channels: List[int],
+        hidden_dim: int,
+        num_heads: int,
+        dropout: float = 0.3,
     ):
         super(VisionAttention, self).__init__()
         assert (
@@ -45,7 +43,7 @@ class VisionAttention(nn.Module):
         return attn
 
     def attention(self, q: torch.Tensor, k: torch.Tensor, v: torch.Tensor, mask: Optional[torch.Tensor] = None):
-        scale = 1 / (self.head_dim ** 0.5)
+        scale = self.head_dim ** -0.5
 
         scores = q.matmul(k.transpose(-2, -1) * scale)
         if mask is not None:
@@ -61,10 +59,17 @@ class VisionAttention(nn.Module):
         return context
 
     def __fit(self, q: torch.Tensor, k: torch.Tensor, v: torch.Tensor):
-        B = q.size(0)
-
         # (B, D, H//P, W//P) -> (B, n_patches, D) -> (B, n_patches, H, d) -> (B, H, n_patches, d)
-        f = lambda qkv, g: g(qkv).view(B, -1, self.num_heads, self.head_dim).transpose(1, 2)
+        def f(qkv, g):
+            B = qkv.size(0)
+            x = g(qkv)
+            x = x.transpose(0, 1)
+            x = PositionalEncoding(self.hidden_dim, x.size(1))(x)
+            x = x.transpose(0, 1)
+
+            x = (x.view(B, -1, self.num_heads, self.head_dim)
+                 .transpose(1, 2))
+            return x
         q, k, v = f(q, self.patch_embedding_q), f(k, self.patch_embedding_k), f(v, self.patch_embedding_v)
 
         return q, k, v
@@ -130,7 +135,16 @@ class VisionLinearAttention(nn.Module):
         B = q.size(0)
 
         # (B, D, H//P, W//P) -> (B, n_patches, D) -> (B, n_patches, H, d) -> (B, H, n_patches, d)
-        f = lambda qkv, g: g(qkv).view(B, -1, self.num_heads, self.head_dim).transpose(1, 2)
+        def f(qkv, g):
+            B = qkv.size(0)
+            x = g(qkv)
+            x = x.transpose(0, 1)
+            x = PositionalEncoding(self.hidden_dim, x.size(1))(x)
+            x = x.transpose(0, 1)
+
+            x = (x.view(B, -1, self.num_heads, self.head_dim)
+                 .transpose(1, 2))
+            return x
         q, k, v = f(q, self.w_q), f(k, self.w_k), f(v, self.w_v)
 
         return q, k, v
@@ -138,12 +152,12 @@ class VisionLinearAttention(nn.Module):
 
 class VisionAgentAttention(nn.Module):
     def __init__(
-            self,
-            patch_size: int,
-            qkva_channels: List[int],
-            hidden_dim: int,
-            num_heads: int,
-            dropout: float = 0.1,
+        self,
+        patch_size: int,
+        qkva_channels: List[int],
+        hidden_dim: int,
+        num_heads: int,
+        dropout: float = 0.3,
     ):
         super(VisionAgentAttention, self).__init__()
         assert (
@@ -198,9 +212,9 @@ class VisionAgentAttention(nn.Module):
         Q = self.q_dropout(Q)
         V = v
 
-        context = Q.matmul(K.matmul(V))  # (B, H, N, d)
-        context = context.transpose(1, 2).contiguous().view(q.size(0), -1, self.hidden_dim)
-        return context
+        A = Q.matmul(K.matmul(V))  # (B, H, N, d)
+        A = A.transpose(1, 2).contiguous().view(q.size(0), -1, self.hidden_dim)
+        return A
 
     def __fit(self, q: torch.Tensor, k: torch.Tensor, v: torch.Tensor, a: torch.Tensor):
         # (B, D, H//P, W//P) -> (B, n_patches, D) -> (B, n_patches, H, d) -> (B, H, n_patches, d)
@@ -221,45 +235,45 @@ class VisionAgentAttention(nn.Module):
 
 
 # (B, H, N, d)
-def attention(q: torch.Tensor, k: torch.Tensor, v: torch.Tensor):
-    scale = q.size(-1) ** -0.5
+# def attention(q: torch.Tensor, k: torch.Tensor, v: torch.Tensor):
+#     scale = q.size(-1) ** -0.5
 
-    a = torch.matmul(q, k.transpose(-2, -1)) * scale
-    a = F.softmax(a)
-    a = torch.matmul(a, v)
-    return a
-
-
-def self_attention(qkv: torch.Tensor):
-    return attention(qkv, qkv, qkv)
+#     a = torch.matmul(q, k.transpose(-2, -1)) * scale
+#     a = F.softmax(a)
+#     a = torch.matmul(a, v)
+#     return a
 
 
-def linear_attention(q: torch.Tensor, k: torch.Tensor, v: torch.Tensor):
-    q = F.softmax(q)
-    k = F.softmax(k)
-
-    scores = torch.matmul(k.transpose(-2, -1), v)
-    a = torch.matmul(q, scores)
-    return a
+# def self_attention(qkv: torch.Tensor):
+#     return attention(qkv, qkv, qkv)
 
 
-def agent_attention(q: torch.Tensor, k: torch.Tensor, v: torch.Tensor, a: torch.Tensor, dropout: int = 0.1):
-    scale = q.size(-1) ** -0.5
+# def linear_attention(q: torch.Tensor, k: torch.Tensor, v: torch.Tensor):
+#     q = F.softmax(q)
+#     k = F.softmax(k)
 
-    K = torch.matmul(q, a.transpose(-2, -1) * scale)
-    K = F.softmax(K)
-    K = F.dropout(K, p=dropout)
-    Q = torch.matmul(k.transpose(-2, -1) * scale)
-    Q = F.softmax(Q)
-    Q = F.dropout(Q, p=dropout)
-    V = v
+#     scores = torch.matmul(k.transpose(-2, -1), v)
+#     a = torch.matmul(q, scores)
+#     return a
 
-    A = torch.matmul(Q, torch.matmul(K, V))
-    return A
+
+# def agent_attention(q: torch.Tensor, k: torch.Tensor, v: torch.Tensor, a: torch.Tensor, dropout: int = 0.3):
+#     scale = q.size(-1) ** -0.5
+
+#     K = torch.matmul(q, a.transpose(-2, -1) * scale)
+#     K = F.softmax(K)
+#     K = F.dropout(K, p=dropout)
+#     Q = torch.matmul(k.transpose(-2, -1) * scale)
+#     Q = F.softmax(Q)
+#     Q = F.dropout(Q, p=dropout)
+#     V = v
+
+#     A = torch.matmul(Q, torch.matmul(K, V))
+#     return A
 
 
 class AgentAttention(nn.Module):
-    def __init__(self, dropout: float=0.2):
+    def __init__(self, dropout: float=0.3):
         super(AgentAttention, self).__init__()
 
         self.softmax = nn.Softmax(dim=-3)
@@ -270,10 +284,10 @@ class AgentAttention(nn.Module):
         # (B, H, N, D)
         scale = q.size(-1) ** -0.5
 
-        K = torch.matmul(q, a.transpose(-2, -1) * scale)
+        K = torch.matmul(q, a.transpose(-2, -1)) * scale
         K = self.softmax(K)
         K = self.dropout_k(K)
-        Q = torch.matmul(k.transpose(-2, -1) * scale)
+        Q = torch.matmul(a, k.transpose(-2, -1)) * scale
         Q = self.softmax(Q)
         Q = self.dropout_q(Q)
         V = v

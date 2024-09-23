@@ -16,15 +16,6 @@ ArrayLike = Union[List[float], np.ndarray, torch.Tensor]
 
 
 def save_graph(filename: str) -> None:
-    """
-    Saves the current matplotlib figure as an image file.
-
-    Parameters:
-    - filename (str): The name of the file where the graph will be saved. The file extension determines the image format.
-
-    Returns:
-    None. The function saves the matplotlib figure as an image file and closes it.
-    """
     create_file_parents(filename)
     plt.savefig(filename)
     plt.close()
@@ -141,12 +132,15 @@ def draw_heat_graph(possibility_matrix: Union[np.ndarray, Image.Image, torch.Ten
     None. The function saves the heatmap as an image file.
     """
     if isinstance(possibility_matrix, Image.Image):
-        possibility_matrix = np.array(possibility_matrix)
+        possibility_matrix_np = np.array(possibility_matrix)
         # assert possibility_matrix.ndim == 2, "possibility_matrix should be a 2-dimensional array"
-    if isinstance(possibility_matrix, torch.Tensor):
-        possibility_matrix = possibility_matrix.cpu().detach().numpy()
+    elif isinstance(possibility_matrix, torch.Tensor):
+        possibility_matrix_np = possibility_matrix.cpu().detach().numpy()
+    else:
+        possibility_matrix_np = possibility_matrix
+        
 
-    ax = sns.heatmap(possibility_matrix, xticklabels=x_ticks, yticklabels=y_ticks)
+    ax = sns.heatmap(possibility_matrix_np, xticklabels=x_ticks, yticklabels=y_ticks)
     ax.set_xlabel(x_label)
     ax.set_ylabel(y_label)
     if title:
@@ -178,22 +172,27 @@ def draw_attention_heat_graph(possibility_matrix: Union[np.ndarray, Image.Image,
     None. The function saves the attention heat graph as an image file.
     """
     if isinstance(possibility_matrix, Image.Image):
-        possibility_matrix = np.array(possibility_matrix)
+        possibility_matrix_np = np.array(possibility_matrix)
     elif isinstance(possibility_matrix, torch.Tensor):
-        possibility_matrix = possibility_matrix.cpu().detach().numpy()
+        possibility_matrix_np = possibility_matrix.cpu().detach().numpy()
+    else:
+        possibility_matrix_np = possibility_matrix
+        
     if isinstance(original_image, Image.Image):
-        original_image = np.array(original_image)
+        original_image_np = np.array(original_image)
     elif isinstance(original_image, torch.Tensor):
-        original_image = original_image.cpu().detach().numpy()
+        original_image_np = original_image.cpu().detach().numpy()
+    else:   
+        original_image_np = original_image
 
-    if original_image.ndim == 3:
-        assert possibility_matrix.shape == original_image.shape[:2], "Both of them should be matched at the pixel level."
-    elif original_image.ndim == 2:
-        assert possibility_matrix.shape == original_image.shape, "Both of them should be matched at the pixel level."
+    if original_image_np.ndim == 3:
+        assert possibility_matrix_np.shape == original_image_np.shape[:2], "Both of them should be matched at the pixel level."
+    elif original_image_np.ndim == 2:
+        assert possibility_matrix_np.shape == original_image_np.shape, "Both of them should be matched at the pixel level."
 
     plt.figure()
-    plt.imshow(original_image)
-    plt.imshow(possibility_matrix, cmap='rainbow', alpha=0.4)
+    plt.imshow(original_image_np)
+    plt.imshow(possibility_matrix_np, cmap='rainbow', alpha=0.4)
 
     plt.xlabel(x_label)
     plt.ylabel(y_label)

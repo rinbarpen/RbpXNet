@@ -5,8 +5,8 @@ from typing import Union, Tuple, List
 import numpy as np
 import torch
 
-from models.unet.unet import UNet, UNetOriginal
-
+from models.unet.unet import UNet
+from models.like.unet import SWA
 
 def create_file_unsafe(filename):
     with open(filename, 'w'):
@@ -14,16 +14,6 @@ def create_file_unsafe(filename):
 
 
 def create_file(filename: str) -> None:
-    """
-    This function creates a new file with the given filename. If the file already exists, 
-    it does nothing.
-
-    Parameters:
-    filename (str): The name of the file to be created. The path to the file can be included.
-
-    Returns:
-    None
-    """
     if os.path.exists(filename):
         return
 
@@ -31,47 +21,15 @@ def create_file(filename: str) -> None:
 
 
 def create_dirs(path: str) -> None:
-    """
-    This function creates a directory at the specified path if it does not already exist.
-
-    Parameters:
-    path (str): The path to the directory to be created. If the path includes parent directories, 
-                they will also be created if they do not exist.
-
-    Returns:
-    None
-    """
     os.makedirs(path, exist_ok=True)
 
 
 def create_file_parents(filename: str) -> None:
-    """
-    This function creates the parent directories of the specified file if they do not exist.
-    If the file itself already exists or the parent directories exist, it does nothing.
-
-    Parameters:
-    filename (str): The name of the file for which the parent directories need to be created.
-                    The path to the file can be included.
-
-    Returns:
-    None
-    """
     dirname = os.path.dirname(filename)
     os.makedirs(dirname, exist_ok=True)
 
 
 def create_file_if_not_exist(filename: str) -> None:
-    """
-    This function creates a new file with the given filename if it does not already exist.
-    If the file already exists, it does nothing. If the parent directories do not exist, 
-    they will be created.
-
-    Parameters:
-    filename (str): The name of the file to be created. The path to the file can be included.
-
-    Returns:
-    None
-    """
     try:
         create_file_unsafe(filename)
     except FileNotFoundError:
@@ -148,25 +106,13 @@ def load_model(filename: str, device: torch.device) -> dict:
 
 
 from pprint import pprint
-def print_model_info(model_src: str, output_stream: pprint.IO[str]):
+from typing import TextIO
+def print_model_info(model_src: str, output_stream: TextIO):
     checkpoint = load_model(model_src, torch.device("cpu"))
     pprint(checkpoint, stream=output_stream)
 
 
 def save_data(filename: str, data: Union[np.ndarray, torch.Tensor]) -> None:
-    """
-    This function saves a NumPy array or PyTorch tensor to a file in .npy format.
-    If the input data is a PyTorch tensor, it will be converted to a NumPy array before saving.
-    If the file does not exist, it will be created. If the file exists, the existing file will be overwritten.
-    If the parent directories do not exist, they will be created.
-
-    Parameters:
-    filename (str): The name of the file to save the data to. The path to the file can be included.
-    data (Union[np.ndarray, torch.Tensor]): The data to be saved. It can be either a NumPy array or a PyTorch tensor.
-
-    Returns:
-    None
-    """
     if isinstance(data, torch.Tensor):
         data = data.cpu().detach().numpy()
 
@@ -198,8 +144,6 @@ def select_model(model: str, *args, **kwargs):
     match model:
         case 'UNet':
             return UNet(kwargs['in_channels'], kwargs['n_classes'], kwargs['use_bilinear'])
-        case 'UNetOriginal':
-            return UNetOriginal(kwargs['in_channels'], kwargs['n_classes'], kwargs['use_bilinear'])
         case _:
             raise ValueError(f'Not supported model: {model}')
 

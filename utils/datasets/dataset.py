@@ -9,7 +9,7 @@ from utils.datasets.dataset_bowl import *
 from utils.datasets.dataset_polyp import *
 from torch.utils.data import DataLoader
 
-from typing import List
+from typing import Tuple
 
 from utils import Transforms
 
@@ -19,7 +19,7 @@ def support_datasets():
 
 
 def get_train_valid_and_test_loader(dataset_name, dataset_dir, batch_size,
-                                    train_valid_test: List[float],
+                                    train_valid_test: Tuple[float, float, float],
                                     use_augment_enhance=True, resize=(512, 512), num_workers=0):
     boost_transform_group = Transforms.TransformBuilder().resize(resize).horizon_flip().vertical_flip().tensorize().build()
     default_transform_group = Transforms.TransformBuilder().resize(resize).tensorize().build()
@@ -55,12 +55,23 @@ def get_train_valid_and_test_loader(dataset_name, dataset_dir, batch_size,
                               shuffle=True,
                               num_workers=num_workers,
                               pin_memory=True)
-    valid_loader = DataLoader(valid_dataset, batch_size=batch_size,
-                              shuffle=False,
-                              num_workers=num_workers,
-                              pin_memory=True)
+    if valid_dataset is not None:
+        valid_loader = DataLoader(valid_dataset, batch_size=batch_size,
+                                shuffle=False,
+                                num_workers=num_workers,
+                                pin_memory=True)
     test_loader  = DataLoader(test_dataset, batch_size=batch_size,
                               shuffle=False,
                               num_workers=num_workers,
                               pin_memory=True)
     return train_loader, valid_loader, test_loader
+
+
+def get_train_and_test_loader(dataset_name, dataset_dir, batch_size, 
+                              train_test_size: Tuple[float, float], 
+                              use_augment_enhance=True, resize=(512, 512), num_workers=0):
+    return get_train_valid_and_test_loader(
+        dataset_name, dataset_dir, batch_size,
+        (train_test_size[0], 0, train_test_size[1]), 
+        use_augment_enhance=use_augment_enhance, 
+        resize=resize, num_workers=num_workers)

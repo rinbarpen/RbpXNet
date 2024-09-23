@@ -1,9 +1,9 @@
 import torch
 from torch import nn
-from torch.functional import F
+from torch import functional as F
 
 class ECAModule(nn.Module):
-    def __init__(self, channels, kernel_size: int=7, **kwargs):
+    def __init__(self, channels: int, kernel_size: int=7, **kwargs):
         super(ECAModule, self).__init__()
 
         self.avg_pool = nn.AdaptiveAvgPool2d(1)

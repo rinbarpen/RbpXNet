@@ -1,5 +1,7 @@
 import torch
+from timm.models.resnet import resnet34
 from torch import nn
+
 
 class ResidualBlock(nn.Module):
     def __init__(self, in_channels, out_channels, downsample=None):
@@ -29,5 +31,3 @@ class ResidualBlock(nn.Module):
         out = self.relu(out)
 
         return out
-
-
