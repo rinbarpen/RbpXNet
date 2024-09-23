@@ -1,7 +1,7 @@
 import torch
 from tqdm import tqdm, trange
 
-@torch.no_grad
+@torch.no_grad()
 def valid_one_epoch(net, device, epoch, valid_loader, criterion):
     net.eval()
     valid_loss = 0.0

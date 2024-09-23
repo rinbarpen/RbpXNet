@@ -1,14 +1,9 @@
 TODO:
- - [x] 补充 metrics 的返回值。 返回值：（每一次的计算结果，平均数，对应类别的评判概率）
  - [ ] 支持 early_exit
  - [ ] torch 和 numpy 的 shape 更好地处理
- - [x] 常用类型编译规范（typing module）
  - [ ] 添加 Dataset 模板
  - [ ] 支持 amp 半精度
  - [ ] 完善 tests
- - [x] 添加更多的 visualization 模板
- - [x] Logging 补全
- - [x] 添加更多数据类型的缓存（CSVWriter）
  - [ ] 支持训练、测试、预测数据导出
 
 FIXME:

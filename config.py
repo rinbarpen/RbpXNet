@@ -1,6 +1,6 @@
 CONFIG = {
-    "project": "Fa",
-    "entity": "LpoutYoumu",
+    "project": "SegmentTaskForMedical",
+    "author": "LpoutYoumu",
     # run model
     "train": False,
     "test": False,
@@ -17,7 +17,10 @@ CONFIG = {
     "backbone": {
         "vgg19": {
             
-        }
+        },
+        "resnet34": {
+
+        },
     },
     # for common
     "device": "cuda",

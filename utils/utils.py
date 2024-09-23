@@ -6,7 +6,7 @@ import numpy as np
 import torch
 
 from models.unet.unet import UNet
-from models.like.unet import SWA
+
 
 def create_file_unsafe(filename):
     with open(filename, 'w'):
@@ -152,3 +152,8 @@ def fix_dir_tail(dirpath: str):
     if not dirpath.endswith('/'):
         return dirpath + '/'
     return dirpath
+
+
+# torch shape: (B, C, H, W)
+# numpy shape: (C, H, W)
+# PIL.Image shape: (W, H, C)
