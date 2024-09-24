@@ -16,18 +16,18 @@ def predict_one(net, input: Path, classes: List[str], device):
     from config import CONFIG
     net.load_state_dict(load_model(CONFIG['load'], device=device)['model'])
 
-    # input = Image.open(input).convert('RGB')
-    # original_size = input.size # (W, H)
-    # input = input.resize((512, 512))  # TODO: to be more flexible
-    # input = torch.from_numpy(np.array(input).transpose(2, 0, 1))
-    # input = input.unsqueeze(0) # (1, 3, 512, 512)
-
     input = Image.open(input).convert('RGB')
-    original_size = input.size
-    input = input.resize((512, 512))
-    input = torch.from_numpy(np.array(input))
+    original_size = input.size # (W, H)
+    input = input.resize((512, 512))  # TODO: to be more flexible
+    input = torch.from_numpy(np.array(input).transpose(2, 0, 1))
+    input = input.unsqueeze(0) # (1, 3, 512, 512)
 
-    input = input.unsqueeze(0).unsqueeze(0) # (1, 1, 512, 512)
+    # input = Image.open(input).convert('L')
+    # original_size = input.size
+    # input = input.resize((512, 512))
+    # input = torch.from_numpy(np.array(input))
+    # input = input.unsqueeze(0).unsqueeze(0) # (1, 1, 512, 512)
+    
     net, input = net.to(device, dtype=torch.float32), input.to(device, dtype=torch.float32)
 
     net.eval()

@@ -2,27 +2,13 @@ from typing import List, Union, Literal, Optional
 
 import numpy as np
 
-from .scores import dice_score, iou_score, precision_score, recall_score, f1_score, accuracy_score
-from ..visualization import draw_metrics_graph
+from utils.metrics.scores import dice_score, iou_score, precision_score, recall_score, f1_score, accuracy_score
+from utils.visualization import draw_metrics_graph
 
 
 def get_metrics(targets: np.ndarray, preds: np.ndarray, labels: List[str],
                 selected: List[str]
                 =["accuracy", "mIoU", "recall", "precision", "f1", "dice"]):
-    """
-    This function calculates and returns a dictionary of selected metrics for a given set of targets and predictions.
-
-    Parameters:
-    - targets (np.array): A 2D numpy array representing the true labels of the data.
-    - preds (np.array): A 2D numpy array representing the predicted labels of the data.
-    - labels (List[str]): A list of unique class labels.
-    - average (Literal["micro", "macro", "samples", "weighted", "binary", "binary"]): The averaging strategy for the metrics. Default is 'macro'.
-    - selected (List[str]): A list of metric names to be calculated. Default is ["accuracy", "mIoU", "recall", "precision", "f1", "pa", "dice"].
-
-    Returns:
-    - results (dict): A dictionary containing the calculated metrics.
-    """
-
     n_classes = len(labels)
     results = dict()
     if 'accuracy' in selected:
@@ -54,13 +40,13 @@ class MetricRecoder:
 
         return self
 
-    def get_metric(self, name: str, mode: str=Literal['mean', 'sum', 'all'], dtype=np.float32):
+    def get_metric(self, name: str, mode: Literal['mean', 'sum', 'all']):
         if mode == 'mean':
-            return np.mean(self.metrics[name], dtype=dtype)
+            return np.mean(self.metrics[name])
         elif mode == 'all':
-            return np.ndarray(self.metrics[name], dtype=dtype)
+            return np.ndarray(self.metrics[name])
         elif mode == 'sum':
-            return np.sum(self.metrics[name], dtype=dtype)
+            return np.sum(self.metrics[name])
 
     def get_all_metrics(self):
         return self.metrics
