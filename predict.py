@@ -22,7 +22,7 @@ def predict_one(net, input: Path, classes: List[str], device):
     # input = torch.from_numpy(np.array(input).transpose(2, 0, 1))
     # input = input.unsqueeze(0) # (1, 3, 512, 512)
 
-    input = Image.open(input).convert('L')
+    input = Image.open(input).convert('RGB')
     original_size = input.size
     input = input.resize((512, 512))
     input = torch.from_numpy(np.array(input))
