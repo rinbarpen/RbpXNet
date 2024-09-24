@@ -20,7 +20,7 @@ def train_one_epoch(net, device, epoch, train_loader, optimizer, criterion):
 
             outputs = net(inputs)
 
-            loss = criterion(outputs, targets) + dice_loss(targets.type(np.uint8), outputs.type(np.uint8), 2)
+            loss = criterion(outputs, targets) # + dice_loss(targets, outputs, 2)
             loss.backward()
 
             optimizer.step()

@@ -167,8 +167,8 @@ def focal_score(targets: np.ndarray, preds: np.ndarray, n_classes: int, smooth: 
 
 
 def scores(targets: np.ndarray, preds: np.ndarray, n_classes: int, smooth: float=1e-5, beta: float=1.0) -> AllScoreDict:
-    miou = iou_score(targets, preds, n_classes, smooth, beta)
-    dice = dice_score(targets, targets, n_classes, smooth, beta)
+    miou = iou_score(targets, preds, n_classes, smooth)
+    dice = dice_score(targets, targets, n_classes, smooth)
     recall = recall_score(targets, preds, n_classes, smooth)
     f1 = f1_score(targets, targets, n_classes, smooth)
     f2 = f_score(targets, targets, n_classes, smooth, 2.0)
