@@ -68,6 +68,6 @@ if __name__ == '__main__':
 
         # train my model
         if CONFIG["train"]:
-            train(net, train_loader, valid_loader if len(valid_loader) > 0 else None,
+            train(net, train_loader, valid_loader,
                 device=CONFIG["device"],
                 n_classes=CONFIG["private"]["n_classes"])

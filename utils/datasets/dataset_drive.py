@@ -50,14 +50,14 @@ class DriveDataset(Dataset):
         # mask = cv2.imread(str(mask_path))
         # image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         # mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
-        image_np = np.array(image, dtype=np.float32).transpose(2, 1, 0)
+        # image_np = np.array(image, dtype=np.float32).transpose(2, 1, 0)
         mask_np = np.array(mask, dtype=np.float32).transpose(1, 0)
         if mask_np.max() > 1:
             mask_np = mask_np / 255
-        # mask = Image.fromarray(mask_np.transpose(1, 0), mode='L')
+        mask = Image.fromarray(mask_np.transpose(1, 0), mode='L')
 
         if self.transforms:
-            image, mask = self.transforms(image_np), self.transforms(mask_np)
+            image, mask = self.transforms(image), self.transforms(mask)
 
         return image, mask
 

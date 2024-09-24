@@ -9,8 +9,8 @@ from utils.visualization import *
 from utils.writer import CSVWriter
 
 
-def train_one_epoch(model, device, epoch, train_loader, optimizer, criterion):
-    model.train()
+def train_one_epoch(net, device, epoch, train_loader, optimizer, criterion):
+    net.train()
     train_loss = 0.0
 
     with tqdm(total=len(train_loader), desc=f'Training') as pbar:
@@ -18,9 +18,9 @@ def train_one_epoch(model, device, epoch, train_loader, optimizer, criterion):
             optimizer.zero_grad()
             inputs, targets = inputs.to(device, dtype=torch.float32), targets.to(device, dtype=torch.float32)
 
-            outputs = model(inputs)
+            outputs = net(inputs)
 
-            loss = criterion(outputs, targets) + dice_loss(targets, outputs, 2)['average']
+            loss = criterion(outputs, targets) + dice_loss(targets.type(np.uint8), outputs.type(np.uint8), 2)
             loss.backward()
 
             optimizer.step()
@@ -34,13 +34,13 @@ def train_one_epoch(model, device, epoch, train_loader, optimizer, criterion):
     return train_loss
 
 
-def train_model(model, device,
+def train_model(net, device,
                 train_loader, valid_loader,
                 n_classes: int):
     from config import CONFIG
-    model.to(device)
+    net.to(device)
 
-    optimizer = optim.Adam(model.parameters(), lr=CONFIG['learning_rate'],
+    optimizer = optim.Adam(net.parameters(), lr=CONFIG['learning_rate'],
                            betas=(0.9, 0.999), eps=1e-8,
                            weight_decay=CONFIG['weight_decay'], amsgrad=True)
     criterion = nn.BCEWithLogitsLoss() if n_classes == 1 else nn.CrossEntropyLoss()
@@ -51,11 +51,11 @@ def train_model(model, device,
     train_losses = np.zeros(epochs)
     valid_losses = np.zeros(epochs)
     for epoch in trange(epochs, desc='Epoch: '):
-        train_loss = train_one_epoch(model, device, epoch,
+        train_loss = train_one_epoch(net, device, epoch,
                                      train_loader=train_loader, optimizer=optimizer, criterion=criterion)
 
         if valid_loader:
-            valid_loss = valid_one_epoch(model, device, epoch,
+            valid_loss = valid_one_epoch(net, device, epoch,
                                          valid_loader=valid_loader, criterion=criterion)
 
             logging.info(f"Epoch {epoch + 1}/{epochs}, Train Loss: {train_loss:.4f}, "
@@ -70,13 +70,13 @@ def train_model(model, device,
             save_model_dir = CONFIG["save"]["model_dir"]
             save_model_filename = \
                 f'{save_model_dir}{CONFIG["model"]}-{epoch + 1}of{epochs}-{CONFIG["dataset"]}.pth'
-            save_model(save_model_filename, model)
+            save_model(save_model_filename, net)
             logging.info(f'save model to {save_model_filename} '
                          f'when {epoch=}, {train_loss=}')
         if train_loss < best_train_loss:
             best_train_loss = train_loss
             best_model_filename = CONFIG["save"]["model"]
-            save_model(best_model_filename, model)
+            save_model(best_model_filename, net)
             logging.info(f'save model to {file_prefix_name(best_model_filename)} '
                          f'when {epoch=}, {train_loss=}')
 
@@ -84,24 +84,6 @@ def train_model(model, device,
 
 
 def train(net, train_loader, valid_loader, device, n_classes):
-    """
-    Trains a neural network model using the provided training and validation data.
-
-    Parameters:
-    - net: The neural network model to be trained.
-    - train_loader: A data loader for the training dataset.
-    - valid_loader: A data loader for the validation dataset.
-    - device: The device (CPU or GPU) to be used for training.
-    - epochs: The number of training epochs.
-    - learning_rate: The learning rate for the optimizer.
-    - n_classes: The number of output classes.
-    - save_n_epoch: The frequency of saving the model (in epochs).
-    - weight_decay (optional): The weight decay for the optimizer. Default is 1e-8.
-
-    Returns:
-    - train_losses: A numpy array containing the training losses for each epoch.
-    - valid_losses: A numpy array containing the validation losses for each epoch.
-    """
     train_losses, valid_losses = \
         train_model(net,
                     device=device,

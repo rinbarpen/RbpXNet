@@ -60,6 +60,8 @@ def get_train_valid_and_test_loader(dataset_name, dataset_dir, batch_size,
                                 shuffle=False,
                                 num_workers=num_workers,
                                 pin_memory=True)
+    else:
+        valid_loader = None
     test_loader  = DataLoader(test_dataset, batch_size=batch_size,
                               shuffle=False,
                               num_workers=num_workers,
