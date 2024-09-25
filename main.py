@@ -1,3 +1,4 @@
+import logging
 import os
 import sys
 import time
@@ -9,7 +10,8 @@ from train import train
 from test import test
 from predict import predict
 from utils.datasets.dataset import get_train_valid_and_test_loader
-from utils.utils import *
+from utils.utils import print_model_info, select_model
+from config import CONFIG
 
 
 LOG_LEVEL = logging.INFO
@@ -26,6 +28,11 @@ if __name__ == '__main__':
     from config import CONFIG
     import config
     parse_args()
+
+    if CONFIG['print']:
+        model_path = CONFIG['load']
+        print_model_info(model_path, sys.stdout) 
+        sys.exit(0)
 
     net = select_model(CONFIG["model"],
                        in_channels=CONFIG["private"]["in_channels"],

@@ -26,8 +26,8 @@ def parse_args():
         An object containing the parsed command-line arguments.
     """
     from config import CONFIG
-    parser = ArgumentParser(description='Training Configuration')
-    parser.add_argument('-c', '--config', type=str, help='Train configuration file (JSON format)')
+    parser = ArgumentParser(description='AI Configuration')
+    parser.add_argument('-c', '--config', type=str, help='Running configuration file (JSON format)')
 
     general_group = parser.add_argument_group('General Settings')
     model_group = parser.add_argument_group('Model Configuration')
@@ -36,11 +36,13 @@ def parse_args():
 
     general_group.add_argument('--project', type=str, help='Project Name')
     general_group.add_argument('--entity', type=str, help='Entity Name')
+    general_group.add_argument('--wandb', action='store_true', help='Launch Wandb instance')
+    general_group.add_argument('--train', action='store_true', help='Train the model')
     general_group.add_argument('--test', action='store_true', help='Test the model')
     general_group.add_argument('--predict', action='store_true', help='Predict the model')
-    general_group.add_argument('--train', action='store_true', help='Train the model')
-    general_group.add_argument('--wandb', action='store_true', help='Launch Wandb instance')
+    general_group.add_argument('--print', action='store_true', help='Model Information')
 
+    
     model_group.add_argument('-m', '--model', type=str, help='Model to train')
     model_group.add_argument('--in_channels', type=int, help='Number of input channels')
     model_group.add_argument('--n_classes', type=int, help='Number of output classes')
@@ -63,9 +65,9 @@ def parse_args():
 
     args = parser.parse_args()
     check_args(args)
-    
+
     if not torch.cuda.is_available() and args.gpu:
-        logging.warning('No GPU found, training will be performed on CPU.')
+        logging.warning('No GPU found, training and inferring will be performed on CPU.')
     device = 'cuda' if args.gpu and torch.cuda.is_available() else 'cpu'
 
     if args.data_dir and not args.data_dir.endswith('/'):

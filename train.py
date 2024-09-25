@@ -90,26 +90,27 @@ def train(net, train_loader, valid_loader, device, n_classes):
                     train_loader=train_loader,
                     valid_loader=valid_loader,
                     n_classes=n_classes)
+
     from config import CONFIG
     use_validate = valid_loader is not None
 
-    train_csv_file = f"{CONFIG['save']['train_dir']}train_loss.csv"
+    train_csv_file = os.path.join(CONFIG['save']['train_dir'], "train_loss.csv")
     writer = CSVWriter(train_csv_file)
     writer.writes({'loss': train_losses}).flush()
     logging.info(f"Save train loss values to {os.path.abspath(train_csv_file)}")
-    if use_validate:
-        valid_csv_file = f"{CONFIG['save']['valid_dir']}valid_loss.csv"
-        writer = CSVWriter(valid_csv_file)
-        writer.writes({'loss': valid_losses}).flush()
-        logging.info(f"Save validate loss values to {os.path.abspath(valid_csv_file)}")
 
-    train_loss_image_path = f"{CONFIG['save']['train_dir']}train_loss.png"
+    train_loss_image_path = os.path.join(CONFIG['save']['train_dir'], "train_loss.png")
     draw_loss_graph(losses=train_losses, title='Train Losses',
                     filename=train_loss_image_path)
     logging.info(f"Save train loss graph to {os.path.abspath(train_loss_image_path)}")
 
     if use_validate:
-        valid_loss_image_path = f"{CONFIG['save']['valid_dir']}valid_loss.png"
+        valid_csv_file = os.path.join(CONFIG['save']['valid_dir'], "valid_loss.csv")
+        writer = CSVWriter(valid_csv_file)
+        writer.writes({'loss': valid_losses}).flush()
+        logging.info(f"Save validate loss values to {os.path.abspath(valid_csv_file)}")
+
+        valid_loss_image_path = os.path.join(CONFIG['save']['valid_dir'], "valid_loss.png")
         draw_loss_graph(losses=valid_losses, title='Validation Losses',
                         filename=valid_loss_image_path)
         logging.info(f"Save validate loss graph to {os.path.abspath(valid_loss_image_path)}")

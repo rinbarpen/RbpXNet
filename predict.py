@@ -83,10 +83,15 @@ def predict(net, inputs: List[Path], classes: List[str], device):
         heat_filename = f"{filename}_heat.png"
         fuse_filename = f"{filename}_fuse.png"
         for category, values in result.items():
-            category_dir = f"{predict_dir}{category}/"
-            predict_path = f"{category_dir}{predict_filename}"
-            heat_path = f"{category_dir}{heat_filename}"
-            fuse_path = f"{category_dir}{fuse_filename}"
+            # category_dir = f"{predict_dir}{category}/"
+            # predict_path = f"{category_dir}{predict_filename}"
+            # heat_path = f"{category_dir}{heat_filename}"
+            # fuse_path = f"{category_dir}{fuse_filename}"
+            category_dir = os.path.join(predict_dir, category)
+            predict_path = os.path.join(category_dir, predict_filename)
+            heat_path = os.path.join(category_dir, heat_filename)
+            fuse_path = os.path.join(category_dir, fuse_filename)
+            title = filename
 
             create_dirs(category_dir)
 
@@ -97,10 +102,10 @@ def predict(net, inputs: List[Path], classes: List[str], device):
             logging.info(f"Save predicted image to {os.path.abspath(predict_path)}")
             draw_heat_graph(possibility,
                             filename=heat_path,
-                            title=filename)
+                            title=title)
             logging.info(f"Save heat graph to {os.path.abspath(heat_path)}")
             draw_attention_heat_graph(mask_image,
                                       original_image,
                                       filename=fuse_path,
-                                      title=filename)
+                                      title=title)
             logging.info(f"Save attention image to {os.path.abspath(fuse_path)}")

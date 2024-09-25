@@ -7,7 +7,7 @@ CONFIG = {
     "predict": False,
     "wandb": False,
     # arguments
-    "model": None,
+    "model": "Select a Model",
     # for models
     "private": {
         "in_channels": 3,
@@ -39,6 +39,12 @@ CONFIG = {
     "save_every_n_epoch": 1,
     "weight_decay": 1e-8,
     "early_exit": False,
+    # "extensions": {
+    #     "augment_boost": False,
+    #     "save_every_n_epoch": 1,
+    #     "weight_decay": 1e-8,
+    #     "early_exit": False,
+    # },
     # for predicting
     "load": "", # load model file
     "input": "", # things to be predicted

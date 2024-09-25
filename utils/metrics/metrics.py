@@ -26,31 +26,35 @@ def get_metrics(targets: np.ndarray, preds: np.ndarray, labels: List[str],
 
     return results
 
-class MetricRecoder:
+class MetricRecorder:
     def __init__(self, **kwargs):
-        super(MetricRecoder, self).__init__()
+        super(MetricRecorder, self).__init__()
 
         self.metrics = dict()
 
-    def add_metric(self, name: str, value: float):
-        if name not in self.metrics:
-            self.metrics[name] = [value]
-        else:
-            self.metrics[name].append(value)
-
+    def record(self, name: str, f, *args):
+        self.metrics[name] = f(*args)
         return self
+
+    def show(self):
+        return MetricShower(self)
+
+class MetricShower:
+    def __init__(self, recorder):
+        super(MetricShower, self).__init__()
+        self.recorder = recorder
 
     def get_metric(self, name: str, mode: Literal['mean', 'sum', 'all']):
         if mode == 'mean':
-            return np.mean(self.metrics[name])
+            return np.mean(self.recorder.metrics[name])
         elif mode == 'all':
-            return np.ndarray(self.metrics[name])
+            return np.ndarray(self.recorder.metrics[name])
         elif mode == 'sum':
-            return np.sum(self.metrics[name])
+            return np.sum(self.recorder.metrics[name])
 
     def get_all_metrics(self):
-        return self.metrics
+        return self.recorder.metrics
 
     def draw_graph(self, metrics_select: List[str], filename: Optional[str] = None):
-        colors = ["red", "green", "blue", "yellow", "purple", "orange", "brown"]
-        draw_metrics_graph(self.metrics, colors=colors, filename=filename, selected=metrics_select, title="Metrics")
+        COLORS = ["red", "green", "blue", "yellow", "purple", "orange", "brown"]
+        draw_metrics_graph(self.recorder.metrics, colors=COLORS, filename=filename, selected=metrics_select, title="Metrics")
