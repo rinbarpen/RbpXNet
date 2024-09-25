@@ -44,22 +44,6 @@ def file_suffix_name(filepath: str):
     return os.path.splitext(os.path.basename(filepath))[1]
 
 def save_model(filename, model, optimizer=None, lr_scheduler=None, scaler=None, **kwargs):
-    """
-    This function saves the state dictionary of a PyTorch model to a file.
-    If the file does not exist, it will be created. If the file exists, the existing file will be overwritten.
-    If the parent directories do not exist, they will be created.
-
-    Parameters:
-    model (torch.nn.Module): The PyTorch model to save.
-    filename (str): The name of the file to save the model state dictionary to. The path to the file can be included.
-    optimizer (torch.optim.Optimizer, optional): The optimizer used for training the model. Defaults to None.
-    lr_scheduler (torch.optim.lr_scheduler._LRScheduler, optional): The learning rate scheduler used for training the model. Defaults to None.
-    scaler (torch.cuda.amp.GradScaler, optional): The gradient scaler used for training the model. Defaults to None.
-    **kwargs: Additional keyword arguments to be saved in the checkpoint.
-
-    Returns:
-    None
-    """
     checkpoint = dict()
     checkpoint["model"] = model.state_dict()
     if optimizer:
@@ -79,21 +63,6 @@ def save_model(filename, model, optimizer=None, lr_scheduler=None, scaler=None, 
 
 
 def load_model(filename: str, device: torch.device) -> dict:
-    """
-    This function loads a PyTorch model's state dictionary from a file.
-
-    Parameters:
-    filename (str): The name of the file to load the model state dictionary from.
-                    The path to the file can be included.
-    device (torch.device): The device where the model will be loaded. This is used to map the model's state dictionary to the device.
-
-    Returns:
-    dict: The loaded model's state dictionary.
-
-    Raises:
-    FileNotFoundError: If the specified file does not exist.
-    Exception: If any other error occurs while loading the model.
-    """
     try:
         checkpoint = torch.load(filename, map_location=device)
         return checkpoint

@@ -12,8 +12,8 @@ from utils.datasets.dataset import get_train_valid_and_test_loader
 from utils.utils import *
 
 
-LOG_LEVEL = logging.DEBUG
-LOG_FORMAT = "%(asctime)s %(name)s [%(levelname)s] %(fileName)s:%(lineno)s %(funcName)s | %(message)s"
+LOG_LEVEL = logging.INFO
+LOG_FORMAT = "%(asctime)s %(name)s [%(levelname)s] %(filename)s:%(lineno)s | %(message)s"
 # LOG_FILENAME = f"logs/{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())}.log"
 
 logging.basicConfig (

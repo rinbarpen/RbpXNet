@@ -5,6 +5,7 @@ from typing import List
 
 import numpy as np
 import torch
+from torch.functional import F
 from PIL import Image
 
 from utils.utils import load_model, create_dirs
@@ -33,6 +34,7 @@ def predict_one(net, input: Path, classes: List[str], device):
     net.eval()
     
     predict = net(input)  # (1, N, H, W)
+    # predict = F.sigmoid(predict)
     predict = (predict - predict.min()) / (predict.max() - predict.min())
     predict = predict.squeeze(0)
     possibilities = predict.cpu().detach().numpy()  # (N, H, W)
