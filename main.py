@@ -10,8 +10,8 @@ from train import train
 from test import test
 from predict import predict
 from utils.datasets.dataset import get_train_valid_and_test_loader
-from utils.utils import print_model_info, select_model
-from config import CONFIG
+from utils.utils import print_model_info, summary_model_info
+from models.models import select_model
 
 
 LOG_LEVEL = logging.INFO
@@ -31,11 +31,14 @@ if __name__ == '__main__':
 
     if CONFIG['print']:
         model_path = CONFIG['load']
-        print_model_info(model_path, sys.stdout) 
+        print("Model Info: ")
+        print_model_info(model_path, sys.stdout)
+        print("Model Summary: ")
+        summary_model_info(model_path, (1, 1, 512, 512))
         sys.exit(0)
 
     net = select_model(CONFIG["model"],
-                       in_channels=CONFIG["private"]["in_channels"],
+                       n_channels=CONFIG["private"]["n_channels"],
                        n_classes=CONFIG["private"]["n_classes"],
                        use_bilinear=True)
 

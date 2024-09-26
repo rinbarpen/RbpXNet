@@ -204,12 +204,12 @@ class VisionAgentAttention(nn.Module):
 
     def agent_attention(self, q: torch.Tensor, k: torch.Tensor, v: torch.Tensor, a: torch.Tensor):
         scale = self.head_dim ** -0.5
-        K = q.matmul(a.transpose(-2, -1) * scale)
-        K = self.k_softmax(K)
-        K = self.k_dropout(K)
-        Q = a.matmul(k.transpose(-2, -1) * scale)
+        Q = q.matmul(a.transpose(-2, -1) * scale)
         Q = self.q_softmax(Q)
         Q = self.q_dropout(Q)
+        K = a.matmul(k.transpose(-2, -1) * scale)
+        K = self.k_softmax(K)
+        K = self.k_dropout(K)
         V = v
 
         A = Q.matmul(K.matmul(V))  # (B, H, N, d)

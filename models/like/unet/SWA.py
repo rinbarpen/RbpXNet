@@ -181,5 +181,5 @@ class UNet(nn.Module):
         return y
 
     def skipway_agent_self_attention(self, qkv, a, i):
-        x = self.vaa_list[i].forward(qkv, qkv, qkv, a)
+        x = self.vaa_list[i-1].forward(qkv, qkv, qkv, a)
         return x

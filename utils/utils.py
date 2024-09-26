@@ -1,12 +1,10 @@
 import logging
 import os
+import os.path
 from typing import Union, Tuple, List
 
 import numpy as np
 import torch
-
-from models.unet.unet import UNet
-
 
 def create_file_unsafe(filename):
     with open(filename, 'w'):
@@ -80,6 +78,11 @@ def print_model_info(model_src: str, output_stream: TextIO):
     checkpoint = load_model(model_src, torch.device("cpu"))
     pprint(checkpoint, stream=output_stream)
 
+def summary_model_info(model_src: str, input_size: Tuple[int, int, int, int]):
+    from torchinfo import summary
+    checkpoint = load_model(model_src, torch.device("cpu"))
+    summary(checkpoint['model'], input_size=input_size)
+
 
 def save_data(filename: str, data: Union[np.ndarray, torch.Tensor]) -> None:
     if isinstance(data, torch.Tensor):
@@ -108,15 +111,6 @@ def tuple2list(t: Tuple):
 def list2tuple(l: List):
     return tuple(l)
 
-
-def select_model(model: str, *args, **kwargs):
-    match model:
-        case 'UNet':
-            return UNet(kwargs['in_channels'], kwargs['n_classes'], kwargs['use_bilinear'])
-        case _:
-            raise ValueError(f'Not supported model: {model}')
-
-
 def fix_dir_tail(dirpath: str):
     if not dirpath.endswith('/'):
         return dirpath + '/'
@@ -126,3 +120,12 @@ def fix_dir_tail(dirpath: str):
 # torch shape: (B, C, H, W)
 # numpy shape: (C, H, W)
 # PIL.Image shape: (W, H, C)
+
+def backup(src_dir: str='output/', dst_dir: str='output/backup/'):
+    if not os.path.exists(src_dir):
+        raise FileNotFoundError(f"Source folder '{src_dir}' does not exist.")
+    if not os.path.exists(dst_dir):
+        create_dirs(dst_dir)
+
+    import shutil
+    shutil.move(src_dir, dst_dir)

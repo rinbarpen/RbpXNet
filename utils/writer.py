@@ -21,20 +21,19 @@ class CSVWriter:
             logging.error(f'No header: {header}')
             return None
 
-    def write(self, header: str, data: Union[np.ndarray, torch.Tensor, List[Any]]):
+    def write(self, header: str, data: Union[np.ndarray, torch.Tensor, List[Any], float]):
         if isinstance(data, torch.Tensor):
             data = data.cpu().detach().numpy()
-
-        self.df[header] = list(data)
+        if isinstance(data, np.ndarray):
+            data = data.tolist()
+        if isinstance(data, float):
+            data = [data]
+        self.df[header] = data
         return self
 
-    def writes(self, datium: Dict[str, Union[np.ndarray, torch.Tensor, List[Any]]]):
+    def writes(self, datium: Dict[str, Union[np.ndarray, torch.Tensor, List[Any], float]]):
         for header, data in datium.items():
-            if isinstance(data, torch.Tensor):
-                writen_data = data.cpu().detach().numpy()
-            else:
-                writen_data = data
-            self.df[header] = [writen_data]
+            self.write(header, data)
 
         return self
 

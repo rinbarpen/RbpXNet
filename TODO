@@ -1,13 +1,17 @@
 TODO:
  - [ ] 支持 early_exit
- - [ ] torch 和 numpy 的 shape 更好地处理
- - [ ] 添加 Dataset 模板
  - [ ] 支持 amp 半精度
  - [ ] 完善 tests
  - [ ] 支持训练、测试、预测数据导出
 
+ - [ ] 添加 auc、roc 指标
+ - [ ] 添加 f2 指标
+ - [ ] 训练时，使用 dice loss
+
+
 FIXME:
- - [ ] No detected
+ - [ ] 在测试集中，输出的指标显示不对
+ - [ ] 在预测阶段中，输出的热度图和融合图像显示不好
 
 
 WORKS:

@@ -76,38 +76,18 @@ def show_image_comparison(pre: ImageType, post: ImageType, mask: ImageType,
     save_or_show(filename)
 
 
-def draw_xy_graph(values: List[float], gap: float,
-                  xlabel: str, ylabel: str,
-                  filename: Optional[str]=None,
-                  title: Optional[str] = None) -> None:
-    """
-    Draws an XY graph from a list of values with a specified gap between points.
-
-    Parameters:
-    - values (List[float]): A list of y-values to be plotted.
-    - gap (float): The gap between consecutive x-values.
-    - xlabel (str): The label for the x-axis.
-    - ylabel (str): The label for the y-axis.
-    - filename (str): The name of the file where the graph will be saved.
-    - title (Optional[str]): The title of the graph. Default is None.
-
-    Returns:
-    None. The function saves the XY graph as an image file.
-    """
+def draw_loss_graph(losses: List[float],
+                    step: int,
+                    filename: Optional[str]=None,
+                    title: Optional[str]=None):
     plt.figure()
-    plt.plot([(i + 1) * gap for i in range(len(values))], values)
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
+    plt.plot([(i + 1) for i in range(0, len(losses), step)], losses)
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
     if title:
         plt.title(title)
 
     save_or_show(filename)
-
-
-def draw_loss_graph(losses: ArrayLike,
-                    filename: Optional[str]=None,
-                    title: Optional[str] = None):
-    draw_xy_graph(losses, gap=5.0, xlabel="Epoch", ylabel="Loss", filename=filename, title=title)
 
 
 def draw_heat_graph(possibility_matrix: Union[np.ndarray, Image.Image, torch.Tensor],
@@ -209,24 +189,11 @@ def draw_attention_heat_graph(possibility_matrix: Union[np.ndarray, Image.Image,
 
 def draw_metrics_graph(metrics: Dict[str, float], colors: List[str],
                        filename: Optional[str],
-                       selected: List[str],
-                       title: Optional[str] = None) -> None:
-    """
-    Draws a bar graph of selected metrics with their corresponding values.
+                       selected: Optional[List[str]] = None,
+                       title: Optional[str] = None):
+    if selected is None:
+        selected = list(metrics.keys())
 
-    Parameters:
-    - metrics (Dict[str, float]): A dictionary containing all available metrics.
-      The keys are the names of the metrics, and the values are their corresponding values.
-    - colors (List[str]): A list of colors to be used for the bars in the graph.
-      The length of the list should match the number of selected metrics.
-    - filename (str): The name of the file where the graph will be saved.
-    - selected (List[str]): A list of metric names to be included in the graph.
-      Only the metrics listed in this list will be displayed in the graph.
-    - title (Optional[str]): The title of the graph. Default is None.
-
-    Returns:
-    None. The function saves the bar graph as an image file.
-    """
     metrics_show = dict(filter(lambda item: item[0] in selected, metrics.items()))
 
     bar_width = min(1 / len(metrics), 0.2)

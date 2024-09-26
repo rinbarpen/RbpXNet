@@ -53,7 +53,7 @@ def train_model(net, device,
     for epoch in trange(epochs, desc='Epoch: '):
         train_loss = train_one_epoch(net, device, epoch,
                                      train_loader=train_loader, optimizer=optimizer, criterion=criterion)
-
+        
         if valid_loader:
             valid_loss = valid_one_epoch(net, device, epoch,
                                          valid_loader=valid_loader, criterion=criterion)
@@ -100,7 +100,7 @@ def train(net, train_loader, valid_loader, device, n_classes):
     logging.info(f"Save train loss values to {os.path.abspath(train_csv_file)}")
 
     train_loss_image_path = os.path.join(CONFIG['save']['train_dir'], "train_loss.png")
-    draw_loss_graph(losses=train_losses, title='Train Losses',
+    draw_loss_graph(losses=train_losses.tolist(), step=1, title='Train Losses',
                     filename=train_loss_image_path)
     logging.info(f"Save train loss graph to {os.path.abspath(train_loss_image_path)}")
 
@@ -111,7 +111,7 @@ def train(net, train_loader, valid_loader, device, n_classes):
         logging.info(f"Save validate loss values to {os.path.abspath(valid_csv_file)}")
 
         valid_loss_image_path = os.path.join(CONFIG['save']['valid_dir'], "valid_loss.png")
-        draw_loss_graph(losses=valid_losses, title='Validation Losses',
+        draw_loss_graph(losses=valid_losses.tolist(), step=1, title='Validation Losses',
                         filename=valid_loss_image_path)
         logging.info(f"Save validate loss graph to {os.path.abspath(valid_loss_image_path)}")
 

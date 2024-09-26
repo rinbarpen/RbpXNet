@@ -5,7 +5,8 @@ from typing import List
 
 import numpy as np
 import torch
-from torch.functional import F
+import torch.nn.functional as F
+
 from PIL import Image
 
 from utils.utils import load_model, create_dirs
@@ -15,19 +16,20 @@ from utils.visualization import draw_attention_heat_graph, draw_heat_graph
 @torch.inference_mode()
 def predict_one(net, input: Path, classes: List[str], device):
     from config import CONFIG
+
     net.load_state_dict(load_model(CONFIG['load'], device=device)['model'])
 
-    input = Image.open(input).convert('RGB')
-    original_size = input.size # (W, H)
-    input = input.resize((512, 512))  # TODO: to be more flexible
-    input = torch.from_numpy(np.array(input).transpose(2, 0, 1))
-    input = input.unsqueeze(0) # (1, 3, 512, 512)
+    # input = Image.open(input).convert('RGB')
+    # original_size = input.size # (W, H)
+    # input = input.resize((512, 512))  # TODO: to be more flexible
+    # input = torch.from_numpy(np.array(input).transpose(2, 0, 1))
+    # input = input.unsqueeze(0) # (1, 3, 512, 512)
 
-    # input = Image.open(input).convert('L')
-    # original_size = input.size
-    # input = input.resize((512, 512))
-    # input = torch.from_numpy(np.array(input))
-    # input = input.unsqueeze(0).unsqueeze(0) # (1, 1, 512, 512)
+    input = Image.open(input).convert('L')
+    original_size = input.size
+    input = input.resize((512, 512))
+    input = torch.from_numpy(np.array(input))
+    input = input.unsqueeze(0).unsqueeze(0) # (1, 1, 512, 512)
     
     net, input = net.to(device, dtype=torch.float32), input.to(device, dtype=torch.float32)
 
@@ -35,7 +37,8 @@ def predict_one(net, input: Path, classes: List[str], device):
     
     predict = net(input)  # (1, N, H, W)
     # predict = F.sigmoid(predict)
-    predict = (predict - predict.min()) / (predict.max() - predict.min())
+    # predict = (predict - predict.min()) / (predict.max() - predict.min())
+    # predict = predict.squeeze(0)
     predict = predict.squeeze(0)
     possibilities = predict.cpu().detach().numpy()  # (N, H, W)
     predict_image = possibilities.copy()  # (N, H, W)
@@ -83,10 +86,6 @@ def predict(net, inputs: List[Path], classes: List[str], device):
         heat_filename = f"{filename}_heat.png"
         fuse_filename = f"{filename}_fuse.png"
         for category, values in result.items():
-            # category_dir = f"{predict_dir}{category}/"
-            # predict_path = f"{category_dir}{predict_filename}"
-            # heat_path = f"{category_dir}{heat_filename}"
-            # fuse_path = f"{category_dir}{fuse_filename}"
             category_dir = os.path.join(predict_dir, category)
             predict_path = os.path.join(category_dir, predict_filename)
             heat_path = os.path.join(category_dir, heat_filename)

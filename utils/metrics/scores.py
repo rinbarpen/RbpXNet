@@ -2,7 +2,7 @@ import numpy as np
 
 def iou_score(targets: np.ndarray, preds: np.ndarray, n_classes: int, smooth: float=1e-6):    
     scores = np.zeros(n_classes)
-    
+
     for i in range(n_classes):
         target_binary = (targets == i)
         pred_binary = (preds == i)
@@ -15,7 +15,7 @@ def iou_score(targets: np.ndarray, preds: np.ndarray, n_classes: int, smooth: fl
 
     return {
         "all": scores,
-        "average": np.mean(scores)
+        "mean": np.mean(scores)
     }
 
 def dice_score(targets: np.ndarray, preds: np.ndarray, n_classes: int, smooth: float=1e-6):
@@ -33,7 +33,7 @@ def dice_score(targets: np.ndarray, preds: np.ndarray, n_classes: int, smooth: f
 
     return {
         "all": scores,
-        "average": np.mean(scores),
+        "mean": np.mean(scores),
     }
 
 # f score is defined by 
@@ -64,7 +64,7 @@ def f1_score(targets: np.ndarray, preds: np.ndarray, n_classes: int, smooth: flo
 
     return {
         "all": scores,
-        "average": np.mean(scores),
+        "mean": np.mean(scores),
     }
 
 def f_score(targets: np.ndarray, preds: np.ndarray, n_classes: int, smooth: float=1e-6, beta: float=2.0) -> dict: 
@@ -87,7 +87,7 @@ def f_score(targets: np.ndarray, preds: np.ndarray, n_classes: int, smooth: floa
 
     return {
         "all": scores,
-        "average": np.mean(scores),
+        "mean": np.mean(scores),
     }
 
 def recall_score(targets: np.ndarray, preds: np.ndarray, n_classes: int, smooth: float=1e-6) -> dict:
@@ -105,7 +105,7 @@ def recall_score(targets: np.ndarray, preds: np.ndarray, n_classes: int, smooth:
 
     return {
         "all": scores,
-        "average": np.mean(scores),
+        "mean": np.mean(scores),
     }
 
 def accuracy_score(targets: np.ndarray, preds: np.ndarray, n_classes: int, smooth: float=1e-6) -> dict:
@@ -123,7 +123,7 @@ def accuracy_score(targets: np.ndarray, preds: np.ndarray, n_classes: int, smoot
 
     return {
         "all": scores,
-        "average": np.mean(scores),
+        "mean": np.mean(scores),
     }
 
 def precision_score(targets: np.ndarray, preds: np.ndarray, n_classes: int, smooth: float=1e-6) -> dict:
@@ -140,7 +140,7 @@ def precision_score(targets: np.ndarray, preds: np.ndarray, n_classes: int, smoo
 
     return {
         "all": scores,
-        "average": np.mean(scores),
+        "mean": np.mean(scores),
     }
 
 def focal_score(targets: np.ndarray, preds: np.ndarray, n_classes: int, smooth: float=1e-6):
@@ -157,7 +157,7 @@ def focal_score(targets: np.ndarray, preds: np.ndarray, n_classes: int, smooth: 
 
     return {
         "all": scores,
-        "average": np.mean(scores),
+        "mean": np.mean(scores),
     }
     
 def calcuate_scores(targets: np.ndarray, preds: np.ndarray, n_classes: int, smooth: float=1e-6) -> dict:    

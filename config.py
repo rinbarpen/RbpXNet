@@ -55,7 +55,8 @@ CONFIG = {
         "test_dir": "output/test/",
         "model_dir": "output/model/",
         "model": "output/best_model.pth",
-    }
+    },
+    "print": False,
 }
 
 # ENVIRONMENT VARIABLES

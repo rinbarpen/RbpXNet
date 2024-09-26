@@ -44,7 +44,7 @@ def parse_args():
 
     
     model_group.add_argument('-m', '--model', type=str, help='Model to train')
-    model_group.add_argument('--in_channels', type=int, help='Number of input channels')
+    model_group.add_argument('--n_channels', type=int, help='Number of input channels')
     model_group.add_argument('--n_classes', type=int, help='Number of output classes')
     # --classes "category1,category2,..."
     model_group.add_argument('--classes', type=str, help='predicted classes group')
@@ -97,7 +97,7 @@ def parse_args():
 
         CONFIG["model"] = args.model
         CONFIG["private"] = {
-            "in_channels": args.in_channels,
+            "n_channels": args.n_channels,
             "n_classes": args.n_classes,
             "classes": classes,
         }

@@ -48,8 +48,7 @@ def get_train_valid_and_test_loader(dataset_name, dataset_dir, batch_size,
             transforms=select_transform_group)
     elif dataset_name == 'DRIVE':
         train_dataset, valid_dataset, test_dataset = DriveDataset.get_train_valid_and_test(
-            dataset_dir, train_valid_test[1],
-            transforms=select_transform_group)
+            dataset_dir)
 
     train_loader = DataLoader(train_dataset, batch_size=batch_size,
                               shuffle=True,

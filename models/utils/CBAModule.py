@@ -2,7 +2,8 @@
 
 import torch
 from torch import nn
-from torch.functional import F
+import torch.nn.functional as F
+
 
 from models.utils.ECAModule import ECAModule
 from models.utils.SAModule import SAModule
