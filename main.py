@@ -5,6 +5,8 @@ import time
 
 from pathlib import Path
 
+from matplotlib import pyplot as plt
+
 from options import parse_args
 from train import train
 from test import test
@@ -28,6 +30,8 @@ if __name__ == '__main__':
     from config import CONFIG
     import config
     parse_args()
+    
+    plt.ion()
 
     if CONFIG['print']:
         model_path = CONFIG['load']
