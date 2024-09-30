@@ -7,31 +7,27 @@ import numpy as np
 import torch
 
 
-def create_file_unsafe(filename):
+def create_file_unsafe(filename: str):
     with open(filename, 'w'):
         pass
 
 
-def create_file(filename: str) -> None:
-    if os.path.exists(filename):
-        return
-
-    create_file_unsafe(filename)
-
-
-def create_dirs(path: str) -> None:
+def create_dirs(path: str):
     os.makedirs(path, exist_ok=True)
 
 
-def create_file_parents(filename: str) -> None:
+def create_file_parents(filename: str):
     dirname = os.path.dirname(filename)
-    os.makedirs(dirname, exist_ok=True)
+    create_dirs(dirname)
 
 
-def create_file_if_not_exist(filename: str) -> None:
+def create_file(filename: str):
+    if os.path.exists(filename):
+        return
+
     try:
         create_file_unsafe(filename)
-    except FileNotFoundError:
+    except FileNotFoundError or OSError:
         create_file_parents(filename)
         create_file_unsafe(filename)
 
@@ -79,8 +75,8 @@ def print_model_info(model_src: str, output_stream: TextIO):
     checkpoint = load_model(model_src, torch.device("cpu"))
     pprint(checkpoint, stream=output_stream)
 
+from torchinfo import summary
 def summary_model_info(model_src: str, input_size: Tuple[int, int, int, int]):
-    from torchinfo import summary
     checkpoint = load_model(model_src, torch.device("cpu"))
     summary(checkpoint['model'], input_size=input_size)
 
@@ -111,12 +107,6 @@ def tuple2list(t: Tuple):
 
 def list2tuple(l: List):
     return tuple(l)
-
-def fix_dir_tail(dirpath: str):
-    if not dirpath.endswith('/'):
-        return dirpath + '/'
-    return dirpath
-
 
 # torch shape: (B, C, H, W)
 # numpy shape: (C, H, W)

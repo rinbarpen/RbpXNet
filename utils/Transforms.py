@@ -1,10 +1,10 @@
-from typing import Tuple, Union, TypedDict
+import typing
 
 import numpy as np
 import torch
 from PIL import Image
 from torchvision import transforms
-
+from typing import TypedDict, Union, Optional, List, Tuple
 
 class BoostTransform:
     def __init__(self, transform):
@@ -20,12 +20,12 @@ class NormDict(TypedDict):
 class TransformBuilder:
     def __init__(self):
         self._to_PILImage = False
-        self._resize = None
+        self._resize: Optional[Tuple[int, int]] = None
         self._rotation = 0.0
         self._horizon_flip = False
         self._vertical_flip = False
         self._tensorize = False
-        self._norm = NormDict()
+        self._norm: NormDict = {"mean": [], "std": []}
 
     def resize(self, resize: Tuple[int, int]):
         self._resize = resize

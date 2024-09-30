@@ -96,8 +96,6 @@ class Recorder:
 
             logging.info(f"save validating loss data to {os.path.abspath(valid_loss_csv)}, "
                         f"draw to {os.path.abspath(valid_loss_graph)}")
-
-
     def record_model(self, **kwargs):
         model_dir = os.path.join(self.dst_dir, 'model')
         create_dirs(model_dir)

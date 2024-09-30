@@ -5,7 +5,7 @@ import torch
 from typing import Literal
 from enum import Enum
 
-from utils.utils import create_dirs, fix_dir_tail
+from utils.utils import create_dirs
 
 def check_args(args):
     if args.config:

@@ -2,6 +2,7 @@ import logging
 import os
 import sys
 import time
+from datetime import datetime
 
 from pathlib import Path
 
@@ -12,18 +13,18 @@ from train import train
 from test import test
 from predict import predict
 from utils.datasets.dataset import get_train_valid_and_test_loader
-from utils.utils import print_model_info, summary_model_info
+from utils.utils import create_file, print_model_info, summary_model_info
 from models.models import select_model
-
 
 LOG_LEVEL = logging.INFO
 LOG_FORMAT = "%(asctime)s %(name)s [%(levelname)s] %(filename)s:%(lineno)s | %(message)s"
-# LOG_FILENAME = f"logs/{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())}.log"
+LOG_FILENAME = f"logs/{datetime.now().strftime('%Y-%m-%d %H_%M_%S')}.log"
 
+create_file(LOG_FILENAME)
 logging.basicConfig (
     level=LOG_LEVEL,
     format=LOG_FORMAT,
-    handlers=[logging.StreamHandler(sys.stdout)]
+    handlers=[logging.StreamHandler(sys.stdout), logging.FileHandler(LOG_FILENAME, encoding='utf-8')]
 )
 
 if __name__ == '__main__':
