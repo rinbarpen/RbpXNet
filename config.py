@@ -7,10 +7,10 @@ CONFIG = {
     "predict": False,
     "wandb": False,
     # arguments
-    "model": "Select a Model",
+    "model": "Select a Model", # Model Name
     # for models
     "private": {
-        "in_channels": 3,
+        "n_channels": 1,
         "n_classes": 1,
         "classes": [],
     },

@@ -6,6 +6,7 @@ from typing import Union, Tuple, List
 import numpy as np
 import torch
 
+
 def create_file_unsafe(filename):
     with open(filename, 'w'):
         pass
@@ -120,12 +121,3 @@ def fix_dir_tail(dirpath: str):
 # torch shape: (B, C, H, W)
 # numpy shape: (C, H, W)
 # PIL.Image shape: (W, H, C)
-
-def backup(src_dir: str='output/', dst_dir: str='output/backup/'):
-    if not os.path.exists(src_dir):
-        raise FileNotFoundError(f"Source folder '{src_dir}' does not exist.")
-    if not os.path.exists(dst_dir):
-        create_dirs(dst_dir)
-
-    import shutil
-    shutil.move(src_dir, dst_dir)

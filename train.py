@@ -7,6 +7,7 @@ from utils.metrics.losses import dice_loss
 from utils.utils import *
 from utils.visualization import *
 from utils.writer import CSVWriter
+from utils.Recorder import Recorder
 
 
 def train_one_epoch(net, device, epoch, train_loader, optimizer, criterion):
@@ -105,15 +106,8 @@ def train(net, train_loader, valid_loader, device, n_classes):
     logging.info(f"Save train loss graph to {os.path.abspath(train_loss_image_path)}")
 
     if use_validate:
-        valid_csv_file = os.path.join(CONFIG['save']['valid_dir'], "valid_loss.csv")
-        writer = CSVWriter(valid_csv_file)
-        writer.writes({'loss': valid_losses}).flush()
-        logging.info(f"Save validate loss values to {os.path.abspath(valid_csv_file)}")
-
-        valid_loss_image_path = os.path.join(CONFIG['save']['valid_dir'], "valid_loss.png")
-        draw_loss_graph(losses=valid_losses.tolist(), step=1, title='Validation Losses',
-                        filename=valid_loss_image_path)
-        logging.info(f"Save validate loss graph to {os.path.abspath(valid_loss_image_path)}")
+        r = Recorder()
+        r.record_valid(valid_loss={'loss': valid_losses})
 
     if CONFIG['wandb']:
         import wandb

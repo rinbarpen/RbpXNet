@@ -86,7 +86,7 @@ class VisionLinearAttention(nn.Module):
     ):
         super(VisionLinearAttention, self).__init__()
         assert (
-                hidden_dim % num_heads == 0
+            hidden_dim % num_heads == 0
         ), "hidden_dim should be divided by num_heads"
 
         self.patch_size = patch_size
@@ -94,17 +94,17 @@ class VisionLinearAttention(nn.Module):
         self.num_heads = num_heads
         self.head_dim = hidden_dim // num_heads
 
-        self.patch_embedding_q = PatchEmbedding(patch_size=patch_size, in_channels=qkv_channels[0],
-                                                embed_dim=hidden_dim)
-        self.patch_embedding_k = PatchEmbedding(patch_size=patch_size, in_channels=qkv_channels[1],
-                                                embed_dim=hidden_dim)
-        self.patch_embedding_v = PatchEmbedding(patch_size=patch_size, in_channels=qkv_channels[2],
-                                                embed_dim=hidden_dim)
+        self.pe_q = PatchEmbedding(patch_size=patch_size, in_channels=qkv_channels[0],
+                                   embed_dim=hidden_dim)
+        self.pe_k = PatchEmbedding(patch_size=patch_size, in_channels=qkv_channels[1],
+                                   embed_dim=hidden_dim)
+        self.pe_v = PatchEmbedding(patch_size=patch_size, in_channels=qkv_channels[2],
+                                   embed_dim=hidden_dim)
 
         self.q_softmax = nn.Softmax(dim=-1)
         self.k_softmax = nn.Softmax(dim=-2)
 
-    def forward(self, q: torch.Tensor, k: torch.Tensor, v: torch.Tensor, a: Optional[torch.Tensor]):
+    def forward(self, q: torch.Tensor, k: torch.Tensor, v: torch.Tensor):
         # (B, N, H, W)
         # n_patches = H*W//P//P, alias to N
         q, k, v = self.__fit(q, k, v)  # (B, H, N, d)
@@ -119,7 +119,7 @@ class VisionLinearAttention(nn.Module):
             negative_inf = -1e9
             k_mask, v_mask = kv_mask
             k = k.masked_fill(k_mask == 0, negative_inf)
-            v = v.masked_fill(kv_mask == 0, 0.0)
+            v = v.masked_fill(v_mask == 0, 0.0)
 
         q = self.q_softmax(q)
         k = self.k_softmax(k)
@@ -132,8 +132,6 @@ class VisionLinearAttention(nn.Module):
         return context
 
     def __fit(self, q: torch.Tensor, k: torch.Tensor, v: torch.Tensor):
-        B = q.size(0)
-
         # (B, D, H//P, W//P) -> (B, n_patches, D) -> (B, n_patches, H, d) -> (B, H, n_patches, d)
         def f(qkv, g):
             B = qkv.size(0)
@@ -145,7 +143,7 @@ class VisionLinearAttention(nn.Module):
             x = (x.view(B, -1, self.num_heads, self.head_dim)
                  .transpose(1, 2))
             return x
-        q, k, v = f(q, self.w_q), f(k, self.w_k), f(v, self.w_v)
+        q, k, v = f(q, self.pe_q), f(k, self.pe_k), f(v, self.pe_v)
 
         return q, k, v
 
@@ -183,7 +181,7 @@ class VisionAgentAttention(nn.Module):
         self.k_dropout = nn.Dropout(p=dropout)
         self.q_dropout = nn.Dropout(p=dropout)
 
-    def forward(self, q: torch.Tensor, k: torch.Tensor, v: torch.Tensor, a: Optional[torch.Tensor]):
+    def forward(self, q: torch.Tensor, k: torch.Tensor, v: torch.Tensor, a: torch.Tensor):
         # (B, N, H, W)
         # n_patches = H*W//P//P, alias to N for qkv, to n for a
         q, k, v, a = self.__fit(q, k, v, a)  # (B, H, N|n, d)

@@ -83,10 +83,12 @@ def parse_args():
                 import json
                 with open(args.config, 'r') as f:
                     CONFIG = json.load(f)
+            # Not recommend
             case 'yaml'|'yml':
                 import yaml
                 with open(args.config, 'r') as f:
                     CONFIG = yaml.safe_load(f)
+            # Recommend
             case 'toml':
                 import toml
                 with open(args.config, 'r') as f:
@@ -123,11 +125,11 @@ def parse_args():
                     CONFIG["weight_decay"] = args.weight_decay
 
     # supply the tail '/' of the directory path
-    CONFIG["save"]["predict_dir"] = fix_dir_tail(CONFIG["save"]["predict_dir"])
-    CONFIG["save"]["train_dir"] = fix_dir_tail(CONFIG["save"]["train_dir"])
-    CONFIG["save"]["valid_dir"] = fix_dir_tail(CONFIG["save"]["valid_dir"])
-    CONFIG["save"]["test_dir"] = fix_dir_tail(CONFIG["save"]["test_dir"])
-    CONFIG["save"]["model_dir"] = fix_dir_tail(CONFIG["save"]["model_dir"])
+    # CONFIG["save"]["predict_dir"] = fix_dir_tail(CONFIG["save"]["predict_dir"])
+    # CONFIG["save"]["train_dir"] = fix_dir_tail(CONFIG["save"]["train_dir"])
+    # CONFIG["save"]["valid_dir"] = fix_dir_tail(CONFIG["save"]["valid_dir"])
+    # CONFIG["save"]["test_dir"] = fix_dir_tail(CONFIG["save"]["test_dir"])
+    # CONFIG["save"]["model_dir"] = fix_dir_tail(CONFIG["save"]["model_dir"])
 
     if args.wandb:
         import wandb
@@ -135,11 +137,11 @@ def parse_args():
         wandb.init(project=args.project,
                    config=CONFIG)
     
-    create_dirs(CONFIG["save"]["train_dir"])
-    create_dirs(CONFIG["save"]["valid_dir"])
-    create_dirs(CONFIG["save"]["test_dir"])
-    create_dirs(CONFIG["save"]["predict_dir"])
-    create_dirs(CONFIG["save"]["model_dir"])
+    # create_dirs(CONFIG["save"]["train_dir"])
+    # create_dirs(CONFIG["save"]["valid_dir"])
+    # create_dirs(CONFIG["save"]["test_dir"])
+    # create_dirs(CONFIG["save"]["predict_dir"])
+    # create_dirs(CONFIG["save"]["model_dir"])
 
 
 def dump_config(filename, file_type: Literal['json', 'yaml', 'yml', 'toml']):
