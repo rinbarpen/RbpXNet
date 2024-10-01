@@ -6,7 +6,7 @@ from torch import functional as F
 from torch.nn import ModuleList
 from torchvision.models import resnet18, vgg19
 
-from models.Attention import VisionAgentAttention, VisionLinearAttention
+from models.utils.Attention import VisionAgentAttention, VisionLinearAttention
 
 
 class EnhanceBlock(nn.Module):

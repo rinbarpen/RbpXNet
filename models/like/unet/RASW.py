@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 
-from models.Attention import VisionAttention
+from models.utils.Attention import VisionAttention
 
 
 class DoubleConv(nn.Module):
