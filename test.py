@@ -85,4 +85,4 @@ def test(net, test_loader, device, classes: List[str], selected_metrics: List[st
     #     wandb.log({'mean_metrics': mean_metrics, 'metrics_image': test_loss_image_path})
 
     # Recorder.record_test(Recorder, test_loss={'metric': all_metrics})
-    Recorder.record_test(Recorder, test_loss={'metric': mean_metrics})
+    Recorder.record_test(Recorder(), test_loss={'metric': mean_metrics})

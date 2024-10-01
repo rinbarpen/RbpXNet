@@ -95,7 +95,7 @@ def train(net, train_loader, valid_loader, device, n_classes):
     from config import CONFIG
     use_validate = valid_loader is not None
 
-    Recorder.record_train(Recorder, train_loss={'loss': train_losses, 'step': 1})
+    Recorder.record_train(Recorder(), train_loss={'loss': train_losses, 'step': 1})
 
     if use_validate:
-        Recorder.record_valid(Recorder, valid_loss={'loss': valid_losses})
+        Recorder.record_valid(Recorder(), valid_loss={'loss': valid_losses})
