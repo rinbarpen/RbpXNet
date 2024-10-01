@@ -95,24 +95,7 @@ def train(net, train_loader, valid_loader, device, n_classes):
     from config import CONFIG
     use_validate = valid_loader is not None
 
-    train_csv_file = os.path.join(CONFIG['save']['train_dir'], "train_loss.csv")
-    writer = CSVWriter(train_csv_file)
-    writer.writes({'loss': train_losses}).flush()
-    logging.info(f"Save train loss values to {os.path.abspath(train_csv_file)}")
-
-    train_loss_image_path = os.path.join(CONFIG['save']['train_dir'], "train_loss.png")
-    draw_loss_graph(losses=train_losses.tolist(), step=1, title='Train Losses',
-                    filename=train_loss_image_path)
-    logging.info(f"Save train loss graph to {os.path.abspath(train_loss_image_path)}")
+    Recorder.record_train(Recorder, train_loss={'loss': train_losses, 'step': 1})
 
     if use_validate:
-        r = Recorder()
-        r.record_valid(valid_loss={'loss': valid_losses})
-
-    if CONFIG['wandb']:
-        import wandb
-        if use_validate:
-            wandb.log({'train_losses': train_losses, 'valid_losses': valid_losses,
-                       'train_loss_image': train_loss_image_path, 'valid_loss_image': valid_loss_image_path})
-        else:
-            wandb.log({'train_losses': train_losses, 'train_loss_image': train_loss_image_path})
+        Recorder.record_valid(Recorder, valid_loss={'loss': valid_losses})

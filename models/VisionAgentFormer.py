@@ -1,9 +1,9 @@
 import torch
 from torch import nn
 
-from .Attention import AgentAttention
-from .PatchEmbedding import PatchEmbedding
-from .PositionalEncoding import PositionalEncoding
+from models.Attention import AgentAttention
+from models.PatchEmbedding import PatchEmbedding
+from models.PositionalEncoding import PositionalEncoding
 
 from kan import KANLayer
 

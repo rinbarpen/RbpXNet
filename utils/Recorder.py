@@ -1,3 +1,4 @@
+from datetime import datetime
 import json
 import logging
 import shutil
@@ -12,13 +13,11 @@ from utils.visualization import draw_loss_graph, draw_metrics_graph
 
 class Recorder:
     _instance = None
-    def __init__(self):
-        hash_code = str(hash(CONFIG['project'] + CONFIG['entity']))
-        self.dst_dir = os.path.join('output', hash_code)
-
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
+            hash_code = str(hash(CONFIG['project'] + CONFIG['entity'] + datetime.now()))
+            cls.dst_dir = os.path.join('output', hash_code)
         return cls
 
     def record_train(self, **kwargs):
@@ -34,10 +33,15 @@ class Recorder:
 
             # train_loss.png
             train_loss_graph = os.path.join(train_dir, 'train_loss.png')
-            draw_loss_graph(loss_dict['loss'], 5, train_loss_graph)
+            draw_loss_graph(loss_dict['loss'], loss_dict['step'], train_loss_graph)
 
             logging.info(f"save training loss data to {os.path.abspath(train_loss_csv)}, "
-                        f"draw to {os.path.abspath(train_loss_graph)}")
+                         f"draw to {os.path.abspath(train_loss_graph)}")
+
+        if CONFIG['wandb']:
+            import wandb
+            if loss_dict:
+                wandb.log({'train_losses': os.path.abspath(train_loss_csv), 'train_loss_image': os.path.abspath(train_loss_graph)})
 
     def record_test(self, **kwargs):
         test_dir = os.path.join(self.dst_dir, 'test')
@@ -52,7 +56,7 @@ class Recorder:
 
             # test_loss.png
             test_loss_graph = os.path.join(test_dir, 'test_loss.png')
-            draw_loss_graph(loss_dict['loss'], 5, test_loss_graph)
+            draw_loss_graph(loss_dict['loss'], loss_dict['step'], test_loss_graph)
 
             logging.info(f"save testing loss data to {os.path.abspath(test_loss_csv)}, "
                         f"draw to {os.path.abspath(test_loss_graph)}")
@@ -77,7 +81,16 @@ class Recorder:
             draw_metrics_graph(metric_dict, colors=colors, filename=test_metric_graph, title='Metrics')
 
             logging.info(f"save testing metric data to {os.path.abspath(test_metric_csv)}, "
-                        f"draw to {os.path.abspath(test_metric_graph)}")
+                         f"draw to {os.path.abspath(test_metric_graph)}")
+
+        if CONFIG['wandb']:
+            import wandb
+            wandb_config = dict()
+            if loss_dict:
+                wandb_config = {**wandb_config, 'test_losses': os.path.abspath(test_loss_csv), 'test_loss_image': os.path.abspath(test_loss_graph)}
+            if metric_dict:
+                wandb_config = {**wandb_config, 'test_metric_csv': os.path.abspath(test_metric_csv), 'test_metric_image': os.path.abspath(test_metric_graph)}
+            wandb.log(wandb_config)
 
     def record_valid(self, **kwargs):
         valid_dir = os.path.join(self.dst_dir, 'valid')
@@ -92,10 +105,16 @@ class Recorder:
 
             # valid_loss.png
             valid_loss_graph = os.path.join(valid_dir, 'valid_loss.png')
-            draw_loss_graph(loss_dict['loss'], 5, valid_loss_graph)
+            draw_loss_graph(loss_dict['loss'], loss_dict['step'], valid_loss_graph)
 
             logging.info(f"save validating loss data to {os.path.abspath(valid_loss_csv)}, "
                         f"draw to {os.path.abspath(valid_loss_graph)}")
+
+        if CONFIG['wandb']:
+            import wandb
+            if loss_dict:
+                wandb.log({'valid_losses': os.path.abspath(valid_loss_csv), 'valid_loss_image': os.path.abspath(valid_loss_graph)})
+
     def record_model(self, **kwargs):
         model_dir = os.path.join(self.dst_dir, 'model')
         create_dirs(model_dir)
@@ -108,6 +127,15 @@ class Recorder:
                        model=model_dict['model'], optimizer=model_dict['optimizer'],
                        lr_scheduler=model_dict['lr_scheduler'], scaler=model_dict['scaler'])
             logging.info(f"save validating loss data to {os.path.abspath(model_filepath)}")
+
+        if CONFIG['wandb']:
+            import wandb
+            if model_dict:
+                wandb.log({'model_filepath': os.path.abspath(model_filepath), 
+                           'model': model_dict['model'], 
+                           'optimizer': model_dict['optimizer'], 
+                           'lr_scheduler': model_dict['lr_scheduler'],
+                           'scaler': model_dict['scaler']})
 
     @staticmethod
     def move(src_dir, dst_dir):

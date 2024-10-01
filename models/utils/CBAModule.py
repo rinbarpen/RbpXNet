@@ -7,14 +7,14 @@ import torch.nn.functional as F
 
 from models.utils.ECAModule import ECAModule
 from models.utils.SAModule import SAModule
-from models.utils.CAModule import CAModule
+from models.utils.SEModule import SEModule
 
 
 class CBAModule(nn.Module):
     def __init__(self, channels, reduction: int=1, use_optimization: bool=False):
         super(CBAModule, self).__init__()
 
-        self.ca_mod = ECAModule(channels) if use_optimization else CAModule(channels, reduction)
+        self.ca_mod = ECAModule(channels) if use_optimization else SEModule(channels, reduction)
         self.sa_mod = SAModule()
 
     def forward(self, x):

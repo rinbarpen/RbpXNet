@@ -9,6 +9,7 @@ from utils.metrics.metrics import get_metrics
 from utils.utils import load_model
 from utils.visualization import draw_metrics_graph
 from utils.writer import CSVWriter
+from utils.Recorder import Recorder
 
 
 @torch.no_grad()
@@ -67,18 +68,21 @@ def test(net, test_loader, device, classes: List[str], selected_metrics: List[st
                          classes=classes,
                          selected_metrics=selected_metrics)
 
-    test_csv_filename = f"{CONFIG['save']['test_dir']}test_metrics.csv"
-    writer = CSVWriter(test_csv_filename)
-    (writer.writes(all_metrics).flush())
-    logging.info(f"Save metrics data to {os.path.abspath(test_csv_filename)}")
+    # test_csv_filename = f"{CONFIG['save']['test_dir']}test_metrics.csv"
+    # writer = CSVWriter(test_csv_filename)
+    # (writer.writes(all_metrics).flush())
+    # logging.info(f"Save metrics data to {os.path.abspath(test_csv_filename)}")
 
-    test_loss_image_path = f"{CONFIG['save']['test_dir']}metrics.png"
-    colors = ['red', 'green', 'blue', 'yellow', 'purple']
-    draw_metrics_graph(mean_metrics,
-                       title='Metrics',
-                       colors=colors,
-                       filename=test_loss_image_path)
-    logging.info(f"Save metrics graph to {os.path.abspath(test_loss_image_path)}")
-    if CONFIG['wandb']:
-        import wandb
-        wandb.log({'mean_metrics': mean_metrics, 'metrics_image': test_loss_image_path})
+    # test_loss_image_path = f"{CONFIG['save']['test_dir']}metrics.png"
+    # colors = ['red', 'green', 'blue', 'yellow', 'purple']
+    # draw_metrics_graph(mean_metrics,
+    #                    title='Metrics',
+    #                    colors=colors,
+    #                    filename=test_loss_image_path)
+    # logging.info(f"Save metrics graph to {os.path.abspath(test_loss_image_path)}")
+    # if CONFIG['wandb']:
+    #     import wandb
+    #     wandb.log({'mean_metrics': mean_metrics, 'metrics_image': test_loss_image_path})
+
+    # Recorder.record_test(Recorder, test_loss={'metric': all_metrics})
+    Recorder.record_test(Recorder, test_loss={'metric': mean_metrics})
