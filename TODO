@@ -1,12 +1,18 @@
 TODO:
  - [ ] 支持 early_exit
  - [ ] 支持 amp 半精度
- - [ ] 完善 tests
- - [ ] 支持训练、测试、预测数据导出
+ - [ ] 支持指定精度训练
+ - [ ] 支持指定显卡最优适配
+ - [ ] 完善 unittest 和 architect test
+ - [x] 支持训练、测试、预测数据导出
 
  - [ ] 添加 auc、roc 指标
- - [ ] 添加 f2 指标
- - [ ] 训练时，使用 dice loss
+ - [x] 添加 f2 指标
+ - [ ] 支持多 loss 组合
+ - [ ] 把 train 封装成 Trainer
+ - [ ] 把 test 封装成 Tester
+ - [ ] 把 predict 封装成 Predictor
+ - [ ] 把 train test predict evaluate 四个文件合并
 
 
 FIXME:
@@ -18,5 +24,5 @@ WORKS:
   LeaderAttention:
     - [ ] 相比传统的 Attention ，使用一个额外的特征进行注意力引导
   VisionLAFormer:
-    - [ ] Use KAN to replace MLP, | replace the first one; replace the second one; replace both
+    - [ ] Use KAN to replace MLP. replace the first one | replace the second one | replace both
     - [ ]

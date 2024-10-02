@@ -48,26 +48,33 @@ class Bowl2018Dataset(Dataset):
         return images, masks
 
     def __getitem__(self, idx):
-        image_path = self.images[idx]
-        mask_paths = self.masks[idx]
+        image_path, mask_path = self.images[idx], self.masks[idx]
 
-        img = Image.open(image_path).convert('RGB')
-        masks = []
+        image = cv2.imread(image_path)
+        mask = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE)
+        image = cv2.resize(image, (512, 512))
+        mask = cv2.resize(mask, (512, 512), interpolation=cv2.INTER_NEAREST)
+
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+        if mask.max() > 1:
+            mask = mask / 255
+
+        flipCode = random.choice([-1, 0, 1, 2])
+        if flipCode != 2:
+            image = self.augment(image, flipCode)
+            mask = self.augment(mask, flipCode)
+
+        image = image.reshape(1, image.shape[0], image.shape[1])
+        mask = mask.reshape(1, mask.shape[0], mask.shape[1])
         
-        # TODO: check if image is already present
-        for mask_path in mask_paths:
-            mask = Image.open(mask_path).convert('L')
-            mask_np = np.array(mask, dtype=np.float32)
-            if mask_np.max() > 1:
-                mask_np = mask_np / 255
-            mask = Image.fromarray(mask_np, mode='L')
-            masks.append(mask)
+        return image, mask
 
-        if self.transforms:
-            img = self.transforms(img)
-            masks = [self.transforms(mask) for mask in masks]
+    def augment(self, image, flipCode):
+        # 使用cv2.flip进行数据增强，filpCode为1水平翻转，0垂直翻转，-1水平+垂直翻转
+        flip = cv2.flip(image, flipCode)
+        return flip
 
-        return img, masks
 
     @staticmethod
     def get_train_valid_and_test(bowl_dir, train_valid_test: Tuple[float, float, float], transforms=None):

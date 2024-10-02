@@ -11,12 +11,16 @@ from utils.utils import create_dirs, save_model
 from utils.writer import CSVWriter
 from utils.visualization import draw_loss_graph, draw_metrics_graph
 
+import hashlib
+
 class Recorder:
     _instance = None
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
-            hash_code = str(hash(CONFIG['project'] + CONFIG['entity'] + datetime.now()))
+            hash_code = hashlib.md5((CONFIG['project'] 
+                                   + CONFIG['entity']  
+                                   + str(datetime.now())).encode()).hexdigest()         
             cls.dst_dir = os.path.join('output', hash_code)
         return cls
 
