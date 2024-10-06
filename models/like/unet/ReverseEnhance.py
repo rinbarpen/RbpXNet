@@ -1,8 +1,8 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from models.utils.PSPModule import PSPModule
 
+from torchvision import SwinTransformer
 
 class DoubleConv(nn.Module):
     """(convolution => [BN] => ReLU) * 2"""
@@ -76,9 +76,28 @@ class OutConv(nn.Module):
     def forward(self, x):
         return self.conv(x)
 
+class BackUp(nn.Module):
+    def __init__(self, in_channels, out_channels, bilinear):
+        super(BackUp, self).__init__()
+        
+        if bilinear:
+            self.up = nn.Upsample(scale_factor=2, mode='bilinear', align_corners=True)
+        else:
+            self.up = nn.ConvTranspose2d(in_channels // 2, in_channels // 2, kernel_size=2, stride=2)
+
+        self.conv = DoubleConv(in_channels, out_channels) # DWConv, ACNet
+        self.norm = nn.BatchNorm2d(out_channels)
+        self.sigmoid = nn.Sigmoid()
+        
+    def forward(self, x):
+        x = self.up(x)
+        x = self.conv(x)
+        x = self.norm(x)
+        x = self.sigmoid(x)
+        return x
 
 class UNet(nn.Module):
-    def __init__(self, n_channels, n_classes, bilinear=True, iter_count=1):
+    def __init__(self, n_channels, n_classes, bilinear=True):
         super(UNet, self).__init__()
         self.n_channels = n_channels
         self.n_classes = n_classes
@@ -91,44 +110,39 @@ class UNet(nn.Module):
         self.down4 = Down(512, 512)
         self.up1 = Up(1024, 256, bilinear)
         self.up2 = Up(512, 128, bilinear)
-        self.up3 = Up(256+128*3, 64, bilinear)
-        self.up4 = Up(128+64*3, 64, bilinear)
-        self.outc = OutConv(64, n_classes)
-        
-        self.small1 = nn.ModuleList([DoubleConv(64, 64), DoubleConv(64, 64), DoubleConv(64, 64)])
-        self.small2 = nn.ModuleList([DoubleConv(128, 128), DoubleConv(128, 128), DoubleConv(128, 128)])
-        self.enhance = PSPModule(512, 512, 32, (1, 2, 3, 6))
-        self.iter_count = iter_count
+        self.up3 = Up(256, 64, bilinear)
+        self.up4 = Up(128, 64, bilinear)
+
+        self.back_up1 = BackUp(1024, 512, bilinear)
+        self.back_up2 = BackUp(512, 256, bilinear)
+        self.back_up3 = BackUp(256, 128, bilinear)
+        self.back_up4 = BackUp(128, 64, bilinear)
+
+        self.out1 = OutConv(1024, n_classes)
+        self.out2 = OutConv(512, n_classes)
+        self.out3 = OutConv(256, n_classes)
+        self.out4 = OutConv(128, n_classes)
+        self.out5 = OutConv(64, n_classes)
 
     def forward(self, x):
-        for _ in range(self.iter_count):
-            x1 = self.inc(x)
-            y = x1
-            ys = [y]
-            for conv in self.small1:
-                y = conv(y)
-                for yy in ys:
-                    y += yy
-                ys.append(y)
-            x1 = torch.cat(ys, dim=1)
-            x2 = self.down1(x1)
-            y = x2
-            ys = [y]
-            for conv in self.small2:
-                y = conv(y)
-                for yy in ys:
-                    y += yy
-                ys.append(y)
-            x2 = torch.cat(ys, dim=1)
-            x3 = self.down2(x2)
-            # x3 = x3
-            x4 = self.down3(x3)
-            # x4 = x4
-            x5 = self.down4(x4)
-            x5 = x5 + self.enhance(x5)
-            x = self.up1(x5, x4)
-            x = self.up2(x, x3)
-            x = self.up3(x, x2)
-            x = self.up4(x, x1)
-        logits = self.outc(x)
-        return logits
+        x1 = self.inc(x)
+        x2 = self.down1(x1)
+        x3 = self.down2(x2)
+        x4 = self.down3(x3)
+        y1 = x5 = self.down4(x4)
+        y2 = self.up1(x5, x4)
+        y3 = self.up2(x, x3)
+        y4 = self.up3(x, x2)
+        y5 = self.up4(x, x1)
+        
+        a = self.back_up1(y1)
+        y2 = y2 * a + y2
+        a = self.back_up2(y2)
+        y3 = y3 * a + y3
+        a = self.back_up3(y3)
+        y4 = y4 * a + y4
+        a = self.back_up4(y4)
+        y5 = y5 * a + y5
+        
+        y1, y2, y3, y4, y5 = self.out1(y1), self.out2(y2), self.out3(y3), self.out4(y4), self.out5(y5)
+        return y1, y2, y3, y4, y5

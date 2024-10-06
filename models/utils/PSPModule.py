@@ -1,3 +1,7 @@
+"""
+    Pyramid Scene Parsing Network
+    http://arxiv.org/abs/1612.01105
+"""
 import torch
 from torch import nn
 

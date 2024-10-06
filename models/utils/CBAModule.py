@@ -1,4 +1,7 @@
-## CBAM Module
+"""
+    CBAM: Convolutional Block Attention Module
+    http://arxiv.org/abs/1807.06521
+"""
 
 import torch
 from torch import nn
@@ -6,7 +9,7 @@ import torch.nn.functional as F
 
 
 from models.utils.ECAModule import ECAModule
-from models.utils.SAModule import SAModule
+from models.utils.CAModule import CAModule
 from models.utils.SEModule import SEModule
 
 
@@ -15,7 +18,7 @@ class CBAModule(nn.Module):
         super(CBAModule, self).__init__()
 
         self.ca_mod = ECAModule(channels) if use_optimization else SEModule(channels, reduction)
-        self.sa_mod = SAModule()
+        self.sa_mod = CAModule()
 
     def forward(self, x):
         x = x * self.ca_mod(x)

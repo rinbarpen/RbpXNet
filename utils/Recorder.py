@@ -127,19 +127,21 @@ class Recorder:
         if model_dict:
             # model
             model_filepath = model_dict['filename']
-            save_model(model_filepath,
-                       model=model_dict['model'], optimizer=model_dict['optimizer'],
-                       lr_scheduler=model_dict['lr_scheduler'], scaler=model_dict['scaler'])
+            save_model(model_filepath, **model_dict, seed=CONFIG['seed'])
+                    #    model=model_dict['model'], optimizer=model_dict['optimizer'],
+                    #    lr_scheduler=model_dict['lr_scheduler'], scaler=model_dict['scaler'])
             logging.info(f"save validating loss data to {os.path.abspath(model_filepath)}")
 
         if CONFIG['wandb']:
             import wandb
             if model_dict:
                 wandb.log({'model_filepath': os.path.abspath(model_filepath), 
-                           'model': model_dict['model'], 
-                           'optimizer': model_dict['optimizer'], 
-                           'lr_scheduler': model_dict['lr_scheduler'],
-                           'scaler': model_dict['scaler']})
+                           **model_dict,
+                           'seed': CONFIG['seed']})
+                        #    'model': model_dict['model'], 
+                        #    'optimizer': model_dict['optimizer'], 
+                        #    'lr_scheduler': model_dict['lr_scheduler'],
+                        #    'scaler': model_dict['scaler']})
 
     @staticmethod
     def move(src_dir, dst_dir):

@@ -1,6 +1,7 @@
 import logging
 import os
 import os.path
+from pathlib import Path
 from typing import Union, Tuple, List
 
 import numpy as np
@@ -32,11 +33,17 @@ def create_file(filename: str):
         create_file_unsafe(filename)
 
 
-def file_prefix_name(filepath: str):
-    return os.path.splitext(os.path.basename(filepath))[0]
+def file_prefix_name(filepath: str|Path):
+    if isinstance(filepath, str):
+        return os.path.splitext(os.path.basename(filepath))[0]
+    elif isinstance(filepath, Path):
+        return filepath.stem
 
-def file_suffix_name(filepath: str):
-    return os.path.splitext(os.path.basename(filepath))[1]
+def file_suffix_name(filepath: str|Path):
+    if isinstance(filepath, str):
+        return os.path.splitext(os.path.basename(filepath))[1]
+    elif isinstance(filepath, Path):
+        return filepath.suffix
 
 def save_model(filename, model, optimizer=None, lr_scheduler=None, scaler=None, **kwargs):
     checkpoint = dict()
@@ -57,8 +64,10 @@ def save_model(filename, model, optimizer=None, lr_scheduler=None, scaler=None, 
         torch.save(checkpoint, filename)
 
 
-def load_model(filename: str, device: torch.device) -> dict:
+def load_model(filename: str, device: torch.device|str) -> dict:
     try:
+        if isinstance(device, str):
+            device = torch.device(device)
         checkpoint = torch.load(filename, map_location=device, weights_only=True)
         return checkpoint
     except FileNotFoundError as e:

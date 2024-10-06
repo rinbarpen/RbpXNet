@@ -1,8 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from models.utils.PSPModule import PSPModule
-
+from timm.models import CrossVit
 
 class DoubleConv(nn.Module):
     """(convolution => [BN] => ReLU) * 2"""
@@ -78,7 +77,7 @@ class OutConv(nn.Module):
 
 
 class UNet(nn.Module):
-    def __init__(self, n_channels, n_classes, bilinear=True, iter_count=1):
+    def __init__(self, n_channels, n_classes, bilinear=True):
         super(UNet, self).__init__()
         self.n_channels = n_channels
         self.n_classes = n_classes
@@ -91,44 +90,25 @@ class UNet(nn.Module):
         self.down4 = Down(512, 512)
         self.up1 = Up(1024, 256, bilinear)
         self.up2 = Up(512, 128, bilinear)
-        self.up3 = Up(256+128*3, 64, bilinear)
-        self.up4 = Up(128+64*3, 64, bilinear)
+        self.up3 = Up(256, 64, bilinear)
+        self.up4 = Up(128, 64, bilinear)
         self.outc = OutConv(64, n_classes)
-        
-        self.small1 = nn.ModuleList([DoubleConv(64, 64), DoubleConv(64, 64), DoubleConv(64, 64)])
-        self.small2 = nn.ModuleList([DoubleConv(128, 128), DoubleConv(128, 128), DoubleConv(128, 128)])
-        self.enhance = PSPModule(512, 512, 32, (1, 2, 3, 6))
-        self.iter_count = iter_count
+
+        # TODO
+        self.cvit1 = CrossVit(img_size=512)
+        self.cvit2 = CrossVit(img_size=256)
+        self.cvit3 = CrossVit(img_size=128)
+        self.cvit4 = CrossVit(img_size= 64)
 
     def forward(self, x):
-        for _ in range(self.iter_count):
-            x1 = self.inc(x)
-            y = x1
-            ys = [y]
-            for conv in self.small1:
-                y = conv(y)
-                for yy in ys:
-                    y += yy
-                ys.append(y)
-            x1 = torch.cat(ys, dim=1)
-            x2 = self.down1(x1)
-            y = x2
-            ys = [y]
-            for conv in self.small2:
-                y = conv(y)
-                for yy in ys:
-                    y += yy
-                ys.append(y)
-            x2 = torch.cat(ys, dim=1)
-            x3 = self.down2(x2)
-            # x3 = x3
-            x4 = self.down3(x3)
-            # x4 = x4
-            x5 = self.down4(x4)
-            x5 = x5 + self.enhance(x5)
-            x = self.up1(x5, x4)
-            x = self.up2(x, x3)
-            x = self.up3(x, x2)
-            x = self.up4(x, x1)
+        x1 = self.inc(x)
+        x2 = self.down1(x1)
+        x3 = self.down2(x2)
+        x4 = self.down3(x3)
+        x5 = self.down4(x4)
+        x = self.up1(x5, x4)
+        x = self.up2(x, x3)
+        x = self.up3(x, x2)
+        x = self.up4(x, x1)
         logits = self.outc(x)
         return logits

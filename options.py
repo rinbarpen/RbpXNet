@@ -1,11 +1,12 @@
 import logging
 from argparse import ArgumentParser
+from typing import Literal
 
 import torch
-from typing import Literal
-from enum import Enum
 
-from utils.utils import create_dirs
+import config
+
+ConfigFileType = Literal['json', 'yaml', 'yml', 'toml']
 
 def check_args(args):
     if args.config:
@@ -26,6 +27,7 @@ def parse_args():
         An object containing the parsed command-line arguments.
     """
     from config import CONFIG
+
     parser = ArgumentParser(description='AI Configuration')
     parser.add_argument('-c', '--config', type=str, help='Running configuration file (JSON format)')
 
@@ -48,6 +50,7 @@ def parse_args():
     model_group.add_argument('--n_classes', type=int, help='Number of output classes')
     # --classes "category1,category2,..."
     model_group.add_argument('--classes', type=str, help='predicted classes group')
+    model_group.add_argument('--seed', type=int, help='seed of initial model')
 
     training_group.add_argument('-b', '--batch_size', type=int, help='Number of samples loaded at one time')
     training_group.add_argument('-e', '--epochs', type=int, help='Number of training epochs')
@@ -131,6 +134,10 @@ def parse_args():
     # CONFIG["save"]["test_dir"] = fix_dir_tail(CONFIG["save"]["test_dir"])
     # CONFIG["save"]["model_dir"] = fix_dir_tail(CONFIG["save"]["model_dir"])
 
+    if args.seed:
+        CONFIG['seed'] = args.seed
+        config.USE_SEED = True
+
     if args.wandb:
         import wandb
         CONFIG["wandb"] = True
@@ -144,8 +151,9 @@ def parse_args():
     # create_dirs(CONFIG["save"]["model_dir"])
 
 
-def dump_config(filename, file_type: Literal['json', 'yaml', 'yml', 'toml']):
+def dump_config(filename, file_type: ConfigFileType):
     from config import CONFIG
+
     match file_type:
         case 'json':
             import json

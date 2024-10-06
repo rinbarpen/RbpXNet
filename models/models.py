@@ -9,5 +9,11 @@ def select_model(model: str, *args, **kwargs):
         case 'SWA-UNet':
             from models.like.unet.SWA import UNet
             return UNet(kwargs['n_channels'], kwargs['n_classes'], kwargs['use_bilinear'])
+        case 'ML-UNet':
+            from models.like.unet.MultiLink import UNet
+            return UNet(kwargs['n_channels'], kwargs['n_classes'], False)
+        case 'Which-Way-UNet':
+            from models.like.unet.WhichWayImportant import UNet
+            return UNet(kwargs['n_channels'], kwargs['n_classes'], False)
         case _:
             raise ValueError(f'Not supported model: {model}')

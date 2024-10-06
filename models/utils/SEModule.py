@@ -1,3 +1,7 @@
+"""
+    Squeeze-and-Excitation Networks
+    http://arxiv.org/abs/1709.01507
+"""
 import torch
 from torch import nn
 

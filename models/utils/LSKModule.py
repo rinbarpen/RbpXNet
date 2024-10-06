@@ -1,6 +1,14 @@
+"""
+    Selective Kernel Networks
+    http://arxiv.org/abs/1903.06586
+    
+    Large Selective Kernel Network for Remote Sensing Object Detection
+    http://arxiv.org/abs/2303.09030
+"""
+
 import torch
 from torch import nn
-from torch import functional as F
+import torch.nn.functional as F
 
 from typing import *
 

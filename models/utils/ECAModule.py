@@ -1,3 +1,8 @@
+"""
+    ECA-Net: Efficient Channel Attention for Deep Convolutional Neural Networks
+    http://arxiv.org/abs/1910.03151
+"""
+
 import torch
 from torch import nn
 import torch.nn.functional as F

@@ -57,6 +57,7 @@ CONFIG = {
         "model": "output/best_model.pth",
     },
     "print": False,
+    "seed": 0,
 }
 
 # ENVIRONMENT VARIABLES
@@ -65,3 +66,5 @@ load_dotenv('.env')
 
 # GLOBAL CONSTANTS
 RESIZE = (512, 512)
+
+USE_SEED = False
