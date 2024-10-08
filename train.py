@@ -59,6 +59,7 @@ class Trainer:
         from config import CONFIG
 
         best_train_loss = float('inf')
+        best_valid_loss = float('inf')
 
         epochs = CONFIG['epochs']
         train_losses = np.zeros(epochs)
@@ -90,6 +91,13 @@ class Trainer:
                 save_model(best_model_filename, self.net)
                 logging.info(f'save model to {file_prefix_name(best_model_filename)} '
                             f'when {epoch=}, {train_loss=}')
+            # if self.validator:
+            #     if valid_loss < best_valid_loss:
+            #         best_valid_loss = valid_loss
+            #         best_model_filename = CONFIG["save"]["model"]
+            #         save_model(best_model_filename, self.net)
+            #         logging.info(f'save model to {file_prefix_name(best_model_filename)} '
+            #                     f'when {epoch=}, {valid_loss=}')
 
         return train_losses, valid_losses
 

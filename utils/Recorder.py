@@ -18,10 +18,11 @@ class Recorder:
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
-            hash_code = hashlib.md5((CONFIG['project'] 
-                                   + CONFIG['entity']  
-                                   + str(datetime.now())).encode()).hexdigest()         
-            cls.dst_dir = os.path.join('output', hash_code)
+            # hash_code = hashlib.md5((CONFIG['project'] 
+            #                        + CONFIG['author']  
+            #                        + str(datetime.now())).encode()).hexdigest()         
+            # cls.dst_dir = os.path.join('output', hash_code)
+            cls.dst_dir = 'output'
         return cls
 
     def record_train(self, **kwargs):

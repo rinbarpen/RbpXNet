@@ -19,7 +19,7 @@ class CombinedLoss(nn.Module):
         ce_loss = F.binary_cross_entropy_with_logits(pred, target) if n_classes == 2 else F.cross_entropy(pred, target) 
         
         # 计算 Dice Loss
-        dice = dice_loss(pred.numpy(), target.numpy(), n_classes)
+        dice = dice_loss(pred.detach().cpu().numpy(), target.detach().cpu().numpy(), n_classes)
         
         # 加权组合损失
         total_loss = self.weight_dice * dice + self.weight_ce * ce_loss

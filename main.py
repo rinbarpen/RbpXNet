@@ -4,6 +4,7 @@ import sys
 from datetime import datetime
 
 import torch
+from torch import nn
 from torch.cuda.amp.grad_scaler import GradScaler
 import numpy as np
 import random
@@ -68,10 +69,10 @@ if __name__ == "__main__":
         summary_model_info(model_path, (1, 1, 512, 512))
         sys.exit(0)
 
-    if USE_SEED:
-        set_seed(CONFIG["seed"])
-    else:
-        set_seed()
+    # if USE_SEED:
+    #     set_seed(CONFIG["seed"])
+    # else:
+    #     set_seed()
 
     net = select_model(
         CONFIG["model"],
@@ -109,7 +110,7 @@ if __name__ == "__main__":
             train_valid_test=(0.9, 0, 0.1),
             use_augment_enhance=CONFIG["augment_boost"],
             resize=config.RESIZE,
-            num_workers=4,
+            num_workers=0,
         )  # type: ignore
         # test my model
         if CONFIG["test"]:
@@ -137,8 +138,8 @@ if __name__ == "__main__":
                 weight_decay=CONFIG["weight_decay"],
                 amsgrad=True,
             )
-            # criterion = nn.BCEWithLogitsLoss() if len(classes) == 1 else nn.CrossEntropyLoss()
-            criterion = CombinedLoss(0.7, 0.3)
+            criterion = nn.BCEWithLogitsLoss() if len(classes) == 1 else nn.CrossEntropyLoss()
+            # criterion = CombinedLoss(0.7, 0.3)
             scaler = GradScaler() if CONFIG["memory"]["amp"] else None
             trainer = Trainer(
                 net,

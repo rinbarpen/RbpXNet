@@ -103,6 +103,14 @@ class UNet(nn.Module):
     def forward(self, x):
         for _ in range(self.iter_count):
             x1 = self.inc(x)
+            x2 = self.down1(x1)
+            x3 = self.down2(x2)
+            # x3 = x3
+            x4 = self.down3(x3)
+            # x4 = x4
+            x5 = self.down4(x4)
+            # x5 = self.enhance(x5)
+
             y = x1
             ys = [y]
             for conv in self.small1:
@@ -111,7 +119,7 @@ class UNet(nn.Module):
                     y += yy
                 ys.append(y)
             x1 = torch.cat(ys, dim=1)
-            x2 = self.down1(x1)
+
             y = x2
             ys = [y]
             for conv in self.small2:
@@ -120,12 +128,7 @@ class UNet(nn.Module):
                     y += yy
                 ys.append(y)
             x2 = torch.cat(ys, dim=1)
-            x3 = self.down2(x2)
-            # x3 = x3
-            x4 = self.down3(x3)
-            # x4 = x4
-            x5 = self.down4(x4)
-            x5 = x5 + self.enhance(x5)
+
             x = self.up1(x5, x4)
             x = self.up2(x, x3)
             x = self.up3(x, x2)
