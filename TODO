@@ -9,14 +9,14 @@ TODO:
  - [ ] 添加 auc、roc 指标
  - [x] 添加 f2 指标
  - [ ] 支持多 loss 组合
- - [ ] 把 train 封装成 Trainer
- - [ ] 把 test 封装成 Tester
- - [ ] 把 predict 封装成 Predictor
+ - [x] 把 train 封装成 Trainer
+ - [x] 把 test 封装成 Tester
+ - [x] 把 predict 封装成 Predictor
  - [ ] 把 train test predict evaluate 四个文件合并
 
 
 FIXME:
- - [ ] 在测试集中，输出的指标显示不对
+ - [x] 在测试集中，输出的指标显示不对
  - [ ] 在预测阶段中，输出的热度图和融合图像显示不好
 
 
