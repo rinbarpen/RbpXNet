@@ -6,13 +6,24 @@ TODO:
  - [ ] 完善 unittest 和 architect test
  - [x] 支持训练、测试、预测数据导出
 
- - [ ] 添加 auc、roc 指标
+ - [ ] 添加 auc、roc 指标 | x
  - [x] 添加 f2 指标
- - [ ] 支持多 loss 组合
+ - [ ] 支持多 loss 组合 | x
  - [x] 把 train 封装成 Trainer
  - [x] 把 test 封装成 Tester
  - [x] 把 predict 封装成 Predictor
  - [ ] 把 train test predict evaluate 四个文件合并
+ - [ ] 参数 Reset | config file to reset parameters | for scripts/
+ - [ ] 重构数据集读取部分
+ - [ ] 整合 pytorch-cam | x
+ - [ ] Recorder 优化 | x
+ - [ ] 多数据集整合训练推理 | x
+ - [ ] 指标筛选器 | x
+ - [ ] 日志记录逻辑修改
+
+WAITING:
+ - [ ] Hook Train、Test、Predict
+
 
 
 FIXME:
