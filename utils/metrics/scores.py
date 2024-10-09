@@ -7,10 +7,10 @@ def iou_score(targets: np.ndarray, preds: np.ndarray, n_classes: int, smooth: fl
         target_binary = (targets == i)
         pred_binary = (preds == i)
 
-        intersection = np.sum(pred_binary * target_binary)
-        union = np.sum(pred_binary) + np.sum(target_binary)
+        intersection = np.logical_and(pred_binary, target_binary).sum()
+        union = np.logical_or(pred_binary, target_binary).sum()
 
-        iou = (intersection + smooth) / (union + smooth) if union > 0 else 0.0
+        iou = (intersection + smooth) / (union + smooth)
         scores[i] = iou
 
     return {
@@ -25,10 +25,10 @@ def dice_score(targets: np.ndarray, preds: np.ndarray, n_classes: int, smooth: f
         target_binary = (targets == i)
         pred_binary = (preds == i)
 
-        TP = np.sum(pred_binary * target_binary)
-        TP_FN_FP = np.sum(pred_binary) + np.sum(target_binary)
+        intersection = np.sum(pred_binary * target_binary)
+        union = np.sum(pred_binary) + np.sum(target_binary)
 
-        dice = (2.0 * TP + smooth) / (TP_FN_FP + smooth) if TP_FN_FP > 0 else 0.0
+        dice = (2.0 * intersection + smooth) / (intersection + union + smooth)
         scores[i] = dice
 
     return {
@@ -53,13 +53,13 @@ def f1_score(targets: np.ndarray, preds: np.ndarray, n_classes: int, smooth: flo
         pred_binary = (preds == i)
 
         TP = np.sum(pred_binary * target_binary)
-        FP = np.sum(pred_binary) - TP
-        FN = np.sum(target_binary) - TP
+        FP = np.logical_and(pred_binary == 1, target_binary == 0).sum()
+        FN = np.logical_and(pred_binary == 0, target_binary == 1).sum()
 
         precision = TP / (TP + FP) if (TP + FP) > 0 else 0
         recall = TP / (TP + FN) if (TP + FN) > 0 else 0
 
-        f1 = 2.0 * (precision * recall + smooth) / (precision + recall + smooth) if (precision + recall) > 0 else 0.0
+        f1 = 2.0 * (precision * recall + smooth) / (precision + recall + smooth)
         scores[i] = f1
 
     return {
@@ -75,14 +75,14 @@ def f_score(targets: np.ndarray, preds: np.ndarray, n_classes: int, smooth: floa
         pred_binary = (preds == i)
 
         TP = np.sum(pred_binary * target_binary)
-        FP = np.sum(pred_binary) - TP
-        FN = np.sum(target_binary) - TP
+        FP = np.logical_and(pred_binary == 1, target_binary == 0).sum()
+        FN = np.logical_and(pred_binary == 0, target_binary == 1).sum()
 
         precision = TP / (TP + FP) if (TP + FP) > 0 else 0
         recall = TP / (TP + FN) if (TP + FN) > 0 else 0
 
         rate = 1 / (beta**2) + 1 
-        f = rate * (precision * recall + smooth) / (precision + recall + smooth) if (precision + recall) > 0 else 0.0
+        f = rate * (precision * recall + smooth) / (precision + recall + smooth)
         scores[i] = f
 
     return {
@@ -98,9 +98,9 @@ def recall_score(targets: np.ndarray, preds: np.ndarray, n_classes: int, smooth:
         pred_binary = (preds == i)
 
         TP = np.sum(pred_binary * target_binary)
-        FN = np.sum(target_binary) - TP
+        FN = np.logical_and(pred_binary == 0, target_binary == 1).sum()
 
-        recall = (TP + smooth) / (TP + FN + smooth) if (TP + FN) > 0 else 0.0
+        recall = (TP + smooth) / (TP + FN + smooth)
         scores[i] = recall
 
     return {
@@ -115,10 +115,12 @@ def accuracy_score(targets: np.ndarray, preds: np.ndarray, n_classes: int, smoot
         target_binary = (targets == i)
         pred_binary = (preds == i)
 
-        correct = np.sum(pred_binary * target_binary)
-        total = pred_binary.size
-        
-        accuracy = (correct + smooth) / (total + smooth) if total > 0 else 0.0
+        TP = np.logical_and(pred_binary == 1, target_binary == 1).sum()
+        FP = np.logical_and(pred_binary == 1, target_binary == 0).sum()
+        FN = np.logical_and(pred_binary == 0, target_binary == 1).sum()
+        TN = np.logical_and(pred_binary == 0, target_binary == 0).sum()
+
+        accuracy = (TP + TN + smooth) / (TP + TN + FP + FN + smooth)
         scores[i] = accuracy
 
     return {
@@ -133,9 +135,9 @@ def precision_score(targets: np.ndarray, preds: np.ndarray, n_classes: int, smoo
         pred_binary = (preds == i)
 
         TP = np.sum(pred_binary * target_binary)
-        FP = np.sum(pred_binary) - TP
+        FP = np.logical_and(pred_binary == 1, target_binary == 0).sum()
 
-        precision = (TP + smooth) / (TP + FP + smooth) if (TP + FP) > 0 else 0.0
+        precision = (TP + smooth) / (TP + FP + smooth)
         scores[i] = precision
 
     return {
@@ -150,9 +152,9 @@ def focal_score(targets: np.ndarray, preds: np.ndarray, n_classes: int, smooth: 
         pred_binary = (preds == i)
 
         TP = np.sum(pred_binary * target_binary)
-        FP = np.sum(pred_binary) - TP
+        FP = np.logical_and(pred_binary == 1, target_binary == 0).sum()
 
-        precision = (TP + smooth) / (TP + FP + smooth) if (TP + FP) > 0 else 0.0
+        precision = (TP + smooth) / (TP + FP + smooth)
         scores[i] = precision
 
     return {

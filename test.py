@@ -33,9 +33,8 @@ class Tester:
 
                 preds = self.net(inputs)
 
-                threshold = 0.5
-                preds[preds >= threshold] = 1
-                preds[preds < threshold] = 0
+                preds[preds >= 0.5] = 1
+                preds[preds < 0.5] = 0
 
                 metrics = get_metrics(
                     targets.cpu().detach().numpy(),
@@ -45,19 +44,26 @@ class Tester:
                 )
 
                 for k, v in metrics.items():
-                    all_metrics[k] = v['all']
+                    if k in all_metrics:
+                        all_metrics[k] += v['all']
+                    else:
+                        all_metrics[k] = v['all']
                     if k in mean_metrics:
                         mean_metrics[k] += v['mean']
                     else:
                         mean_metrics[k] = v['mean']
                 
-                for k, v in mean_metrics.items():
-                    mean_metrics[k] /= len(self.loader)
-                
+
                 pbar.update()
                 pbar.set_postfix(**{
                     'accuracy': metrics['accuracy']['mean']
                 })
+
+        for k, v in mean_metrics.items():
+            mean_metrics[k] = v / len(self.loader)
+        
+        for k, v in all_metrics.items():
+            all_metrics[k] = v / len(self.loader)
 
         return all_metrics, mean_metrics
 
@@ -69,5 +75,7 @@ class Tester:
         
         self.net.load_state_dict(load_model(model_filename, self.device)["model"])
         all_metrics, mean_metrics = self.test_model(selected_metrics=selected_metrics)
+        print(all_metrics, '\n', mean_metrics)
 
-        Recorder.record_test(Recorder(), 'metric'=mean_metrics)
+        Recorder.record_test(Recorder(), metric=mean_metrics)
+        # Recorder.record_test(Recorder(), metric=all_metrics['vein'])

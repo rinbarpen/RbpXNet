@@ -165,5 +165,5 @@ class UNet(nn.Module):
         return y
 
     def reverse_attention(self, q, k, v, i):
-        x = self.ra_list[i].forward(q, k, v)
+        x = self.ra_list[i-1](q, k, v)
         return x

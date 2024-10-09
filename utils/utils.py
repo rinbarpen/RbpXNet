@@ -59,7 +59,7 @@ def save_model(filename, model, optimizer=None, lr_scheduler=None, scaler=None, 
 
     try:
         torch.save(checkpoint, filename)
-    except FileNotFoundError:
+    except Exception:
         create_file_parents(filename)
         torch.save(checkpoint, filename)
 
@@ -68,7 +68,7 @@ def load_model(filename: str, device: torch.device|str) -> dict:
     try:
         if isinstance(device, str):
             device = torch.device(device)
-        checkpoint = torch.load(filename, map_location=device, weights_only=True)
+        checkpoint = torch.load(filename, map_location=device, weights_only=False)
         return checkpoint
     except FileNotFoundError as e:
         logging.error(f'File Not Found: {e}')

@@ -1,3 +1,4 @@
+import os.path
 from tqdm import tqdm
 
 from evaluate import *
@@ -80,8 +81,7 @@ class Trainer:
 
             if (epoch + 1) % CONFIG['save_every_n_epoch'] == 0:
                 save_model_dir = CONFIG["save"]["model_dir"]
-                save_model_filename = \
-                    f'{save_model_dir}{CONFIG["model"]}-{epoch + 1}of{epochs}-{CONFIG["dataset"]}.pth'
+                save_model_filename = os.path.join(save_model_dir, f'{CONFIG["model"]}-{epoch + 1}of{epochs}-{CONFIG["dataset"]}.pth')
                 save_model(save_model_filename, self.net)
                 logging.info(f'save model to {save_model_filename} '
                             f'when {epoch=}, {train_loss=}')

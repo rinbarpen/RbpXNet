@@ -59,7 +59,7 @@ def set_seed(seed: Optional[int] = None):
 if __name__ == "__main__":
     parse_args()
 
-    plt.ion()
+    # plt.ion()
 
     if CONFIG["print"]:
         model_path = CONFIG["load"]
@@ -92,7 +92,8 @@ if __name__ == "__main__":
     if CONFIG["predict"]:
         if os.path.isdir(CONFIG["input"]):
             input_dir = Path(CONFIG["input"])
-            inputs = [input_dir / input for input in input_dir.glob("*.{png,jpg,jpeg}")]
+            inputs = [input_dir / input for input in input_dir.glob('*.*')
+                      if input.suffix in ['.png', '.jpg', '.jpeg']]
         else:
             inputs = [CONFIG["input"]]
 
@@ -115,6 +116,7 @@ if __name__ == "__main__":
         # test my model
         if CONFIG["test"]:
             metrics = ["mIoU", "accuracy", "f1", "f2", "recall", "dice"]
+            classes = ['background', *classes]
             tester = Tester(net, loader=test_loader, classes=classes, device=device)
             tester.test(selected_metrics=metrics)
             sys.exit(0)
