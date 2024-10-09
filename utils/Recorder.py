@@ -29,8 +29,8 @@ class Recorder:
         train_dir = os.path.join(self.dst_dir, 'train')
         create_dirs(train_dir)
 
-        loss_dict = kwargs['train_loss']
-        if loss_dict:
+        if 'train_loss' in kwargs.keys():
+            loss_dict = kwargs['train_loss']
             # train_loss.csv
             train_loss_csv = os.path.join(train_dir, 'train_loss.csv')
             writer = CSVWriter(train_loss_csv)
@@ -52,8 +52,8 @@ class Recorder:
         test_dir = os.path.join(self.dst_dir, 'test')
         create_dirs(test_dir)
 
-        loss_dict = kwargs['test_loss']
-        if loss_dict:
+        if 'test_loss' in kwargs.keys():
+            loss_dict = kwargs['test_loss']
             # test_loss.csv
             test_loss_csv = os.path.join(test_dir, 'test_loss.csv')
             writer = CSVWriter(test_loss_csv)
@@ -66,8 +66,8 @@ class Recorder:
             logging.info(f"save testing loss data to {os.path.abspath(test_loss_csv)}, "
                         f"draw to {os.path.abspath(test_loss_graph)}")
 
-        metric_dict = kwargs['metric']
-        if metric_dict:
+        if 'metric' in kwargs.keys():
+            metric_dict = kwargs['metric']
             # metric_dict: {
             #    "f1":        f1_score,
             #    "f2":        f2_score,
@@ -101,8 +101,8 @@ class Recorder:
         valid_dir = os.path.join(self.dst_dir, 'valid')
         create_dirs(valid_dir)
 
-        loss_dict = kwargs['valid_loss']
-        if loss_dict:
+        if 'valid_loss' in kwargs.keys():
+            loss_dict = kwargs['valid_loss']
             # valid_loss.csv
             valid_loss_csv = os.path.join(valid_dir, 'valid_loss.csv')
             writer = CSVWriter(valid_loss_csv)
@@ -124,8 +124,8 @@ class Recorder:
         model_dir = os.path.join(self.dst_dir, 'model')
         create_dirs(model_dir)
 
-        model_dict = kwargs['model']
-        if model_dict:
+        if 'model' in kwargs.keys():
+            model_dict = kwargs['model']
             # model
             model_filepath = model_dict['filename']
             save_model(model_filepath, **model_dict, seed=CONFIG['seed'])
