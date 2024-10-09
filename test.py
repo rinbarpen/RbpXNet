@@ -50,7 +50,10 @@ class Tester:
                         mean_metrics[k] += v['mean']
                     else:
                         mean_metrics[k] = v['mean']
-
+                
+                for k, v in mean_metrics.items():
+                    mean_metrics[k] /= len(self.loader)
+                
                 pbar.update()
                 pbar.set_postfix(**{
                     'accuracy': metrics['accuracy']['mean']
@@ -67,4 +70,4 @@ class Tester:
         self.net.load_state_dict(load_model(model_filename, self.device)["model"])
         all_metrics, mean_metrics = self.test_model(selected_metrics=selected_metrics)
 
-        Recorder.record_test(Recorder(), test_loss={'metric': mean_metrics})
+        Recorder.record_test(Recorder(), 'metric'=mean_metrics)
