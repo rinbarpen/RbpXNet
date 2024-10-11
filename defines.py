@@ -1,8 +1,9 @@
-from typing import TypedDict
+from typing import TypedDict, List, Union, Tuple, Dict
+import numpy as np
+import torch
 
 class ScoreDict(TypedDict):
-    all: list[float]
-    mean: float
+    data: Union[List[List[float]], List[float], Dict[str, List[float]]] 
 
 class AllScoreDict(TypedDict):
     miou: ScoreDict
@@ -12,4 +13,3 @@ class AllScoreDict(TypedDict):
     recall: ScoreDict
     precision: ScoreDict
     accuracy: ScoreDict
-    

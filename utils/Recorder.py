@@ -77,13 +77,19 @@ class Recorder:
             #    "recall":    recall_score,
             #    "precision": precision_score,
             # }
+            all_dict = kwargs['all']
+            mean_dict = kwargs['mean']
+
             test_metric_csv = os.path.join(test_dir, 'metrics.csv')
             writer = CSVWriter(filename=test_metric_csv)
-            writer.writes(metric_dict).flush()
+            for name, values in all_dict.items():
+                for label, value in values.items(): 
+                    writer.write(f'{name}_{label}', value)
+            writer.flush()
 
             colors = ['purple', 'red', 'green', 'yellow', 'blue', 'brown', 'cyan']
             test_metric_graph =  os.path.join(test_dir, 'metrics.png')
-            draw_metrics_graph(metric_dict, colors=colors, filename=test_metric_graph, title='Metrics')
+            draw_metrics_graph(mean_dict, colors=colors, filename=test_metric_graph, title='Metrics')
 
             logging.info(f"save testing metric data to {os.path.abspath(test_metric_csv)}, "
                          f"draw to {os.path.abspath(test_metric_graph)}")

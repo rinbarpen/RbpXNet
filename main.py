@@ -16,30 +16,33 @@ from matplotlib import pyplot as plt
 import config
 from config import CONFIG, USE_SEED
 from options import parse_args
-from train import Trainer
-from test import Tester
-from predict import Predictor
+from ml_operations import Trainer, Tester, Predictor
 from typing import Optional
 from utils.datasets.dataset import get_train_valid_and_test_loader
 from utils.metrics.Criterion import CombinedLoss
-from utils.utils import create_file, print_model_info, summary_model_info
+from utils.utils import create_file, print_model_info, summary_model_info, list2tuple
 from models.models import select_model
+
 
 LOG_LEVEL = logging.INFO
 LOG_FORMAT = (
     "%(asctime)s %(name)s [%(levelname)s] %(filename)s:%(lineno)s | %(message)s"
 )
-LOG_FILENAME = f"logs/{datetime.now().strftime('%Y-%m-%d %H_%M_%S')}.log"
 
-create_file(LOG_FILENAME)
-logging.basicConfig(
-    level=LOG_LEVEL,
-    format=LOG_FORMAT,
-    handlers=[
-        logging.StreamHandler(sys.stdout),
-        logging.FileHandler(LOG_FILENAME, encoding="utf-8"),
-    ],
-)
+
+def prepare_logging():
+    log_file = os.path.join("logs", CONFIG["author"], CONFIG["project"], 
+                            CONFIG['model'] + '-' + CONFIG['dataset'] + ".log")
+
+    create_file(log_file)
+    logging.basicConfig(
+        level=LOG_LEVEL,
+        format=LOG_FORMAT,
+        handlers=[
+            logging.StreamHandler(sys.stdout),
+            logging.FileHandler(log_file, encoding="utf-8", delay=True),
+        ],
+    )
 
 
 def set_seed(seed: Optional[int] = None):
@@ -55,9 +58,10 @@ def set_seed(seed: Optional[int] = None):
     torch.backends.cudnn.benchmark = False
     torch.backends.cudnn.deterministic = True
 
-
 if __name__ == "__main__":
     parse_args()
+
+    prepare_logging()
 
     # plt.ion()
 
@@ -65,8 +69,8 @@ if __name__ == "__main__":
         model_path = CONFIG["load"]
         print("Model Info: ")
         print_model_info(model_path, sys.stdout)
-        print("Model Summary: ")
-        summary_model_info(model_path, (1, 1, 512, 512))
+        # print("Model Summary: ")
+        # summary_model_info(model_path, (1, 1, 512, 512))
         sys.exit(0)
 
     # if USE_SEED:
@@ -92,12 +96,15 @@ if __name__ == "__main__":
     if CONFIG["predict"]:
         if os.path.isdir(CONFIG["input"]):
             input_dir = Path(CONFIG["input"])
-            inputs = [input_dir / input for input in input_dir.glob('*.*')
-                      if input.suffix in ['.png', '.jpg', '.jpeg']]
+            inputs = [
+                input_dir / input
+                for input in input_dir.glob("*.*")
+                if input.suffix in [".png", ".jpg", ".jpeg"]
+            ]
         else:
             inputs = [CONFIG["input"]]
 
-        predictor = Predictor(net, classes=classes, device=device)
+        predictor = Predictor(net, classes=list2tuple(classes), device=device)
         predictor.predict(inputs)
         sys.exit(0)
 
@@ -115,10 +122,10 @@ if __name__ == "__main__":
         )  # type: ignore
         # test my model
         if CONFIG["test"]:
-            metrics = ["mIoU", "accuracy", "f1", "f2", "recall", "dice"]
-            classes = ['background', *classes]
-            tester = Tester(net, loader=test_loader, classes=classes, device=device)
-            tester.test(selected_metrics=metrics)
+            metrics = ["mIoU", "accuracy", "f1", "f2", "recall", "precision", "dice"]
+            classes = ["background", *classes]
+            tester = Tester(net, loader=test_loader, classes=list2tuple(classes), device=device)
+            tester.test(selected_metrics=list2tuple(metrics))
             sys.exit(0)
 
         # train my model
@@ -140,7 +147,9 @@ if __name__ == "__main__":
                 weight_decay=CONFIG["weight_decay"],
                 amsgrad=True,
             )
-            criterion = nn.BCEWithLogitsLoss() if len(classes) == 1 else nn.CrossEntropyLoss()
+            criterion = (
+                nn.BCEWithLogitsLoss() if len(classes) == 1 else nn.CrossEntropyLoss()
+            )
             # criterion = CombinedLoss(0.7, 0.3)
             scaler = GradScaler() if CONFIG["memory"]["amp"] else None
             trainer = Trainer(

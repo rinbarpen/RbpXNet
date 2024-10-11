@@ -1,59 +1,65 @@
 from typing import List, Union, Literal, Optional
 
 import numpy as np
-
+from copy import deepcopy, copy
+from defines import AllScoreDict
 from utils.metrics.scores import dice_score, iou_score, precision_score, recall_score, f1_score, accuracy_score
 from utils.visualization import draw_metrics_graph
-
-
-def get_metrics(targets: np.ndarray, preds: np.ndarray, labels: List[str],
-                selected: List[str]
-                =["accuracy", "mIoU", "recall", "precision", "f1", "dice"]):
-    n_classes = len(labels)
-    results = dict()
-    if 'accuracy' in selected:
-        results['accuracy'] = accuracy_score(targets, preds, n_classes)
-    if 'mIoU' in selected:
-        results['mIoU'] = iou_score(targets, preds, n_classes)
-    if 'recall' in selected:
-        results['recall'] = recall_score(targets, preds, n_classes)
-    if 'precision' in selected:
-        results['precision'] = precision_score(targets, preds, n_classes)
-    if 'f1' in selected:
-        results['f1'] = f1_score(targets, preds, n_classes)
-    if 'dice' in selected:
-        results['dice'] = dice_score(targets, preds, n_classes)
-
-    return results
 
 class MetricRecorder:
     def __init__(self, **kwargs):
         super(MetricRecorder, self).__init__()
 
-        self.metrics = dict()
+        self.metrics = dict(**kwargs)
 
-    def record(self, name: str, f, *args):
-        self.metrics[name] = f(*args)
+    def record(self, name: str, values: dict):
+        for label, value in values.items():
+            self.metrics[name][label].extend(value)
         return self
 
-    def show(self):
-        return MetricShower(self)
+    def filter(self, names: tuple):
+        filtered_metrics = dict()
+        for selected in filter(lambda x: x in names, self.metrics.keys()):
+            filtered_metrics[selected] = self.metrics[selected]
+        return MetricRecorder(**filtered_metrics)
 
-class MetricShower:
+    def view(self):
+        return MetricViewer(self)
+
+class MetricViewer:
     def __init__(self, recorder):
-        super(MetricShower, self).__init__()
+        super(MetricViewer, self).__init__()
         self.recorder = recorder
 
-    def get_metric(self, name: str, mode: Literal['mean', 'sum', 'all']):
+    def metric(self, name: str, label: str, mode: Literal['mean', 'std', 'all']):
         if mode == 'mean':
-            return np.mean(self.recorder.metrics[name])
+            return np.mean(self.recorder.metrics[name][label])
+        elif mode == 'std':
+            return np.std(self.recorder.metrics[name][label])
         elif mode == 'all':
-            return np.ndarray(self.recorder.metrics[name])
-        elif mode == 'sum':
-            return np.sum(self.recorder.metrics[name])
+            return np.ndarray(self.recorder.metrics[name][label])
 
-    def get_all_metrics(self):
-        return self.recorder.metrics
+    def all_metrics(self, mode: Literal['mean', 'std', 'all']='all'):
+        metrics = dict()
+        match mode:
+            case 'all': 
+                metrics = self.recorder.metrics
+            case 'mean':
+                for name, values in self.recorder.metrics.items():
+                    for label in values.keys():
+                        metrics[name][label] = self.metric(name, label, 'mean')
+                for name, values in metrics.items():
+                    mean = np.mean([x for x in values.values()])
+                    metrics[name]['mean'] = mean 
+            case 'std':
+                for name, values in self.recorder.metrics.items():
+                    for label in values.keys():
+                        metrics[name][label] = self.metric(name, label, 'std')
+                for name, values in metrics.items():
+                    std = np.std([x for x in values.values()])
+                    metrics[name]['std'] = std
+
+        return metrics
 
     def draw_graph(self, metrics_select: List[str], filename: Optional[str] = None):
         COLORS = ["red", "green", "blue", "yellow", "purple", "orange", "brown"]

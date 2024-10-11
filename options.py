@@ -1,14 +1,20 @@
 import logging
 from argparse import ArgumentParser
+import os.path
 from typing import Literal
 
 import torch
-
+import sys
 import config
+from utils.utils import create_file_parents, file_suffix_name
 
-ConfigFileType = Literal['json', 'yaml', 'yml', 'toml']
+ConfigFileType = Literal['json', 'yaml', 'yml']
 
 def check_args(args):
+    if not args.project:
+        raise ValueError('You must specify a project name')
+    if not args.author:
+        raise ValueError('There should have less than an author with this project')
     if args.config:
         ext = args.config.splitext(args.config)[1]
         if ext not in ['json', 'yaml', 'yml', 'toml']:
@@ -37,12 +43,14 @@ def parse_args():
     predict_group = parser.add_argument_group('Predict Configuration')
 
     general_group.add_argument('--project', type=str, help='Project Name')
-    general_group.add_argument('--entity', type=str, help='Entity Name')
+    general_group.add_argument('--author', type=str, help='Author Name')
     general_group.add_argument('--wandb', action='store_true', help='Launch Wandb instance')
     general_group.add_argument('--train', action='store_true', help='Train the model')
     general_group.add_argument('--test', action='store_true', help='Test the model')
     general_group.add_argument('--predict', action='store_true', help='Predict the model')
     general_group.add_argument('--print', action='store_true', help='Model Information')
+    general_group.add_argument('--export', type=str, default='toml', help='Export Configurations with file format')
+    # general_group.add_argument('--transfer', action='store_true', help='Transfer Configurations')
 
     
     model_group.add_argument('-m', '--model', type=str, help='Model to train')
@@ -67,36 +75,56 @@ def parse_args():
     predict_group.add_argument('-i', '--input', type=str, help='The input data to predict')
 
     args = parser.parse_args()
-    check_args(args)
-
-    if not torch.cuda.is_available() and args.gpu:
-        logging.warning('No GPU found, training and inferring will be performed on CPU.')
-    device = 'cuda' if args.gpu and torch.cuda.is_available() else 'cpu'
-
-    if args.data_dir and not args.data_dir.endswith('/'):
-        args.data_dir += '/'
-
-    if args.dataset:
-        args.dataset = args.dataset.upper()
 
     if args.config:
-        ext = args.config.splitext(args.config)[1]
+        ext = file_suffix_name(args.config)
         match ext:
-            case 'json':
+            case '.json':
                 import json
                 with open(args.config, 'r') as f:
                     CONFIG = json.load(f)
-            # Not recommend
-            case 'yaml'|'yml':
+            case '.yaml'|'.yml':
                 import yaml
                 with open(args.config, 'r') as f:
                     CONFIG = yaml.safe_load(f)
-            # Recommend
-            case 'toml':
-                import toml
-                with open(args.config, 'r') as f:
-                    CONFIG = toml.load(f)
+            case _:
+                raise ValueError('Unsupported config file: %s' % args.config)
+
+        if args.train or args.test or args.predict:
+            CONFIG['train'] = CONFIG['test'] = CONFIG['predict'] = False
+            if args.train:
+                CONFIG['train'] = True
+            elif args.test:
+                CONFIG['test'] = True
+            elif args.predict:
+                CONFIG['predict'] = True
+
+        # Rewrite settings
+        if args.load:
+            CONFIG['load'] = args.load
+        if args.input:
+            CONFIG['input'] = args.input
+        if args.dataset:
+            CONFIG['dataset'] = args.dataset
+        if args.data_dir:
+            CONFIG['data_dir'] = args.data_dir
+        if args.weight_decay:
+            CONFIG['weight_decay'] = args.weight_decay
+        if args.learning_rate:
+            CONFIG['learning_rate'] = args.learning_rate
+        if args.batch_size:
+            CONFIG['batch_size'] = args.batch_size
+        if args.epochs:
+            CONFIG['epochs'] = args.epochs
+        if args.save_every_n_epoch:
+            CONFIG['save_every_n_epoch'] = args.save_every_n_epoch
+
     else:
+        check_args(args)
+        
+        CONFIG['project'] = args.project
+        CONFIG['author'] = args.author
+
         classes = args.classes.split(',')
         classes = [c.strip() for c in classes]
 
@@ -106,7 +134,7 @@ def parse_args():
             "n_classes": args.n_classes,
             "classes": classes,
         }
-        CONFIG["device"] = device
+        CONFIG["device"] = 'cuda' if args.gpu else 'cpu'
         CONFIG["amp"] = args.amp
         if args.predict:
             CONFIG["predict"] = True
@@ -127,12 +155,11 @@ def parse_args():
                 if args.weight_decay:
                     CONFIG["weight_decay"] = args.weight_decay
 
-    # supply the tail '/' of the directory path
-    # CONFIG["save"]["predict_dir"] = fix_dir_tail(CONFIG["save"]["predict_dir"])
-    # CONFIG["save"]["train_dir"] = fix_dir_tail(CONFIG["save"]["train_dir"])
-    # CONFIG["save"]["valid_dir"] = fix_dir_tail(CONFIG["save"]["valid_dir"])
-    # CONFIG["save"]["test_dir"] = fix_dir_tail(CONFIG["save"]["test_dir"])
-    # CONFIG["save"]["model_dir"] = fix_dir_tail(CONFIG["save"]["model_dir"])
+    if not torch.cuda.is_available() and CONFIG['device']:
+        logging.warning('No GPU found, training and inferring will be performed on CPU.')
+    CONFIG['device'] = 'cuda' if CONFIG['device'] == 'cuda' and torch.cuda.is_available() else 'cpu'
+
+    CONFIG['dataset'] = CONFIG['dataset'].upper()
 
     if args.seed:
         CONFIG['seed'] = args.seed
@@ -142,18 +169,18 @@ def parse_args():
         import wandb
         CONFIG["wandb"] = True
         wandb.init(project=args.project,
+                   entity=args.author,
                    config=CONFIG)
-    
-    # create_dirs(CONFIG["save"]["train_dir"])
-    # create_dirs(CONFIG["save"]["valid_dir"])
-    # create_dirs(CONFIG["save"]["test_dir"])
-    # create_dirs(CONFIG["save"]["predict_dir"])
-    # create_dirs(CONFIG["save"]["model_dir"])
 
+    if args.export:
+        filename = os.path.join('configs', CONFIG['project'], CONFIG['model'] + '_' + CONFIG['dataset'] + '.' + args.export)
+        dump_config(filename, args.export)
+        sys.exit(0)
 
 def dump_config(filename, file_type: ConfigFileType):
     from config import CONFIG
 
+    create_file_parents(filename)
     match file_type:
         case 'json':
             import json
@@ -163,7 +190,5 @@ def dump_config(filename, file_type: ConfigFileType):
             import yaml
             with open(filename, 'w') as f:
                 yaml.dump(CONFIG, f)
-        case 'toml':
-            import toml
-            with open(filename, 'w') as f:
-                toml.dump(CONFIG, f)
+
+    logging.info('Dumping config to %s' % filename)

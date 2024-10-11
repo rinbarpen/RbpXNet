@@ -1,6 +1,6 @@
 TODO:
  - [ ] 支持 early_exit
- - [ ] 支持 amp 半精度
+ - [x] 支持 amp 半精度
  - [ ] 支持指定精度训练
  - [ ] 支持指定显卡最优适配
  - [ ] 完善 unittest 和 architect test
@@ -12,14 +12,14 @@ TODO:
  - [x] 把 train 封装成 Trainer
  - [x] 把 test 封装成 Tester
  - [x] 把 predict 封装成 Predictor
- - [ ] 把 train test predict evaluate 四个文件合并
+ - [x] 把 train test predict evaluate 四个文件合并
  - [ ] 参数 Reset | config file to reset parameters | for scripts/
  - [ ] 重构数据集读取部分
  - [ ] 整合 pytorch-cam | x
  - [ ] Recorder 优化 | x
  - [ ] 多数据集整合训练推理 | x
- - [ ] 指标筛选器 | x
- - [ ] 日志记录逻辑修改
+ - [x] 指标筛选器
+ - [x] 日志记录逻辑修改
 
 WAITING:
  - [ ] Hook Train、Test、Predict
@@ -27,7 +27,6 @@ WAITING:
 
 
 FIXME:
- - [x] 在测试集中，输出的指标显示不对
  - [ ] 在预测阶段中，输出的热度图和融合图像显示不好
 
 

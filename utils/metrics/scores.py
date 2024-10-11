@@ -1,9 +1,9 @@
+from typing import Tuple
 import numpy as np
 
-def iou_score(targets: np.ndarray, preds: np.ndarray, n_classes: int, smooth: float=1e-6):    
-    scores = np.zeros(n_classes)
-
-    for i in range(n_classes):
+def iou_score(targets: np.ndarray, preds: np.ndarray, classes: Tuple[str, ...], smooth: float=1e-6):    
+    scores = dict()
+    for i, label in enumerate(classes):
         target_binary = (targets == i)
         pred_binary = (preds == i)
 
@@ -11,17 +11,14 @@ def iou_score(targets: np.ndarray, preds: np.ndarray, n_classes: int, smooth: fl
         union = np.logical_or(pred_binary, target_binary).sum()
 
         iou = (intersection + smooth) / (union + smooth)
-        scores[i] = iou
+        scores[label] = iou
 
-    return {
-        "all": scores,
-        "mean": np.mean(scores)
-    }
+    return scores
 
-def dice_score(targets: np.ndarray, preds: np.ndarray, n_classes: int, smooth: float=1e-6):
+def dice_score(targets: np.ndarray, preds: np.ndarray, classes: Tuple[str, ...], smooth: float=1e-6):
 
-    scores = np.zeros(n_classes)
-    for i in range(n_classes):
+    scores = dict()
+    for i, label in enumerate(classes):
         target_binary = (targets == i)
         pred_binary = (preds == i)
 
@@ -29,12 +26,9 @@ def dice_score(targets: np.ndarray, preds: np.ndarray, n_classes: int, smooth: f
         union = np.sum(pred_binary) + np.sum(target_binary)
 
         dice = (2.0 * intersection + smooth) / (intersection + union + smooth)
-        scores[i] = dice
+        scores[label] = dice
 
-    return {
-        "all": scores,
-        "mean": np.mean(scores),
-    }
+    return scores
 
 # f score is defined by 
 # \latex 
@@ -45,10 +39,10 @@ def dice_score(targets: np.ndarray, preds: np.ndarray, n_classes: int, smooth: f
 # if \beta < 1, recall is more important 
 # if \beta = 1, precision and recall is both important
 # the meaning of fx_score of x is the value \beta 
-def f1_score(targets: np.ndarray, preds: np.ndarray, n_classes: int, smooth: float=1e-6) -> dict:
+def f1_score(targets: np.ndarray, preds: np.ndarray, classes: Tuple[str, ...], smooth: float=1e-6):
 
-    scores = np.zeros(n_classes)
-    for i in range(n_classes):
+    scores = dict()
+    for i, label in enumerate(classes):
         target_binary = (targets == i)
         pred_binary = (preds == i)
 
@@ -60,17 +54,14 @@ def f1_score(targets: np.ndarray, preds: np.ndarray, n_classes: int, smooth: flo
         recall = TP / (TP + FN) if (TP + FN) > 0 else 0
 
         f1 = 2.0 * (precision * recall + smooth) / (precision + recall + smooth)
-        scores[i] = f1
+        scores[label] = f1
 
-    return {
-        "all": scores,
-        "mean": np.mean(scores),
-    }
+    return scores
 
-def f_score(targets: np.ndarray, preds: np.ndarray, n_classes: int, smooth: float=1e-6, beta: float=2.0) -> dict: 
+def f_score(targets: np.ndarray, preds: np.ndarray, classes: Tuple[str, ...], smooth: float=1e-6, beta: float=2.0): 
 
-    scores = np.zeros(n_classes)
-    for i in range(n_classes):
+    scores = dict()
+    for i, label in enumerate(classes):
         target_binary = (targets == i)
         pred_binary = (preds == i)
 
@@ -83,17 +74,14 @@ def f_score(targets: np.ndarray, preds: np.ndarray, n_classes: int, smooth: floa
 
         rate = 1 / (beta**2) + 1 
         f = rate * (precision * recall + smooth) / (precision + recall + smooth)
-        scores[i] = f
+        scores[label] = f
 
-    return {
-        "all": scores,
-        "mean": np.mean(scores),
-    }
+    return scores
 
-def recall_score(targets: np.ndarray, preds: np.ndarray, n_classes: int, smooth: float=1e-6) -> dict:
+def recall_score(targets: np.ndarray, preds: np.ndarray, classes: Tuple[str, ...], smooth: float=1e-6):
 
-    scores = np.zeros(n_classes)
-    for i in range(n_classes):
+    scores = dict()
+    for i, label in enumerate(classes):
         target_binary = (targets == i)
         pred_binary = (preds == i)
 
@@ -101,17 +89,14 @@ def recall_score(targets: np.ndarray, preds: np.ndarray, n_classes: int, smooth:
         FN = np.logical_and(pred_binary == 0, target_binary == 1).sum()
 
         recall = (TP + smooth) / (TP + FN + smooth)
-        scores[i] = recall
+        scores[label] = recall
 
-    return {
-        "all": scores,
-        "mean": np.mean(scores),
-    }
+    return scores
 
-def accuracy_score(targets: np.ndarray, preds: np.ndarray, n_classes: int, smooth: float=1e-6) -> dict:
+def accuracy_score(targets: np.ndarray, preds: np.ndarray, classes: Tuple[str, ...], smooth: float=1e-6):
 
-    scores = np.zeros(n_classes)
-    for i in range(n_classes):
+    scores = dict()
+    for i, label in enumerate(classes):
         target_binary = (targets == i)
         pred_binary = (preds == i)
 
@@ -121,16 +106,13 @@ def accuracy_score(targets: np.ndarray, preds: np.ndarray, n_classes: int, smoot
         TN = np.logical_and(pred_binary == 0, target_binary == 0).sum()
 
         accuracy = (TP + TN + smooth) / (TP + TN + FP + FN + smooth)
-        scores[i] = accuracy
+        scores[label] = accuracy
 
-    return {
-        "all": scores,
-        "mean": np.mean(scores),
-    }
+    return scores
 
-def precision_score(targets: np.ndarray, preds: np.ndarray, n_classes: int, smooth: float=1e-6) -> dict:
-    scores = np.zeros(n_classes)
-    for i in range(n_classes):
+def precision_score(targets: np.ndarray, preds: np.ndarray, classes: Tuple[str, ...], smooth: float=1e-6):
+    scores = dict()
+    for i, label in enumerate(classes):
         target_binary = (targets == i)
         pred_binary = (preds == i)
 
@@ -138,16 +120,13 @@ def precision_score(targets: np.ndarray, preds: np.ndarray, n_classes: int, smoo
         FP = np.logical_and(pred_binary == 1, target_binary == 0).sum()
 
         precision = (TP + smooth) / (TP + FP + smooth)
-        scores[i] = precision
+        scores[label] = precision
 
-    return {
-        "all": scores,
-        "mean": np.mean(scores),
-    }
+    return scores
 
-def focal_score(targets: np.ndarray, preds: np.ndarray, n_classes: int, smooth: float=1e-6):
-    scores = np.zeros(n_classes)
-    for i in range(n_classes):
+def focal_score(targets: np.ndarray, preds: np.ndarray, classes: Tuple[str, ...], smooth: float=1e-6):
+    scores = dict()
+    for i, label in enumerate(classes):        
         target_binary = (targets == i)
         pred_binary = (preds == i)
 
@@ -155,21 +134,18 @@ def focal_score(targets: np.ndarray, preds: np.ndarray, n_classes: int, smooth: 
         FP = np.logical_and(pred_binary == 1, target_binary == 0).sum()
 
         precision = (TP + smooth) / (TP + FP + smooth)
-        scores[i] = precision
+        scores[label] = precision
 
-    return {
-        "all": scores,
-        "mean": np.mean(scores),
-    }
+    return scores
     
-def calcuate_scores(targets: np.ndarray, preds: np.ndarray, n_classes: int, smooth: float=1e-6) -> dict:    
-    ious = iou_score(targets, preds, n_classes, smooth=smooth)
-    dice = dice_score(targets, targets, n_classes, smooth=smooth)
-    recall = recall_score(targets, preds, n_classes, smooth=smooth)
-    f1 = f1_score(targets, targets, n_classes, smooth=smooth)
-    f2 = f_score(targets, targets, n_classes, smooth=smooth, beta=2.0)
-    precision = precision_score(targets, preds, n_classes, smooth=smooth)
-    accuracy = accuracy_score(targets, preds, n_classes, smooth=smooth)
+def calcuate_scores(targets: np.ndarray, preds: np.ndarray, classes: Tuple[str, ...], smooth: float=1e-6) -> dict:    
+    ious = iou_score(targets, preds, classes, smooth=smooth)
+    dice = dice_score(targets, targets, classes, smooth=smooth)
+    recall = recall_score(targets, preds, classes, smooth=smooth)
+    f1 = f1_score(targets, targets, classes, smooth=smooth)
+    f2 = f_score(targets, targets, classes, smooth=smooth, beta=2.0)
+    precision = precision_score(targets, preds, classes, smooth=smooth)
+    accuracy = accuracy_score(targets, preds, classes, smooth=smooth)
 
     return {
         "miou": ious,

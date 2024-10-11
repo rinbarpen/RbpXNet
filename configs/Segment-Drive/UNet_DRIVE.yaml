@@ -1,0 +1,41 @@
+amp: false
+augment_boost: true
+author: LpoutYoumu
+backbone:
+  resnet34: {}
+  vgg19: {}
+batch_size: 1
+data_dir: D:/Data/Datasets/
+dataset: DRIVE
+device: cuda
+early_exit: false
+epochs: 40
+input: ''
+learning_rate: 3.0e-05
+load: ''
+memory:
+  amp: false
+  only_fp16: false
+model: UNet
+multi-gpu: false
+predict: false
+print: false
+private:
+  classes:
+  - vein
+  n_channels: 1
+  n_classes: 1
+project: Segment-Drive
+save:
+  model: output/best_model.pth
+  model_dir: output/model/
+  predict_dir: output/predict/
+  test_dir: output/test/
+  train_dir: output/train/
+  valid_dir: output/valid/
+save_every_n_epoch: 1
+seed: 0
+test: false
+train: true
+wandb: false
+weight_decay: 1.0e-08
