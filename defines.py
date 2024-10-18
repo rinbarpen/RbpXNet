@@ -3,7 +3,7 @@ import numpy as np
 import torch
 
 class ScoreDict(TypedDict):
-    data: Union[List[List[float]], List[float], Dict[str, List[float]]] 
+    data: Union[List[List[float]], Dict[str, List[float]]] 
 
 class AllScoreDict(TypedDict):
     miou: ScoreDict
