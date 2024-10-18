@@ -16,7 +16,6 @@ def iou_score(targets: np.ndarray, preds: np.ndarray, classes: Tuple[str, ...], 
     return scores
 
 def dice_score(targets: np.ndarray, preds: np.ndarray, classes: Tuple[str, ...], smooth: float=1e-6):
-
     scores = dict()
     for i, label in enumerate(classes):
         target_binary = (targets == i)
@@ -126,7 +125,7 @@ def precision_score(targets: np.ndarray, preds: np.ndarray, classes: Tuple[str, 
 
 def focal_score(targets: np.ndarray, preds: np.ndarray, classes: Tuple[str, ...], smooth: float=1e-6):
     scores = dict()
-    for i, label in enumerate(classes):        
+    for i, label in enumerate(classes):
         target_binary = (targets == i)
         pred_binary = (preds == i)
 
@@ -137,7 +136,13 @@ def focal_score(targets: np.ndarray, preds: np.ndarray, classes: Tuple[str, ...]
         scores[label] = precision
 
     return scores
-    
+
+def roc_score(targets: np.ndarray, preds: np.ndarray, classes: Tuple[str, ...], smooth: float=1e-6):
+    pass
+
+def auc_score(targets: np.ndarray, preds: np.ndarray, classes: Tuple[str, ...], smooth: float=1e-6):
+    pass
+
 def calcuate_scores(targets: np.ndarray, preds: np.ndarray, classes: Tuple[str, ...], smooth: float=1e-6) -> dict:    
     ious = iou_score(targets, preds, classes, smooth=smooth)
     dice = dice_score(targets, targets, classes, smooth=smooth)

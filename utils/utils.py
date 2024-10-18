@@ -2,7 +2,6 @@ import logging
 import os
 import os.path
 from pathlib import Path
-from typing import Union, Tuple, List
 
 import numpy as np
 import torch
@@ -81,16 +80,19 @@ def load_model(filename: str, device: torch.device|str) -> dict:
 from pprint import pprint
 from typing import TextIO
 def print_model_info(model_src: str, output_stream: TextIO):
-    checkpoint = load_model(model_src, torch.device("cpu"))
+    checkpoint = load_model(model_src, "cpu")
     pprint(checkpoint, stream=output_stream)
 
 from torchinfo import summary
-def summary_model_info(model_src: str, input_size: Tuple[int, int, int, int]):
-    checkpoint = load_model(model_src, torch.device("cpu"))
-    summary(checkpoint['model'], input_size=input_size)
+def summary_model_info(model_src: str|torch.nn.Module, input_size: tuple[int, int, int, int]):
+    if isinstance(model_src, str):
+        checkpoint = load_model(model_src, "cpu")
+        summary(checkpoint['model'], input_size=input_size)
+    elif isinstance(model_src, torch.nn.Module):
+        summary(model_src, input_size=input_size)
 
 
-def save_data(filename: str, data: Union[np.ndarray, torch.Tensor]) -> None:
+def save_data(filename: str, data: np.ndarray|torch.Tensor) -> None:
     if isinstance(data, torch.Tensor):
         data = data.cpu().detach().numpy()
 
@@ -110,12 +112,35 @@ def load_data(filename: str) -> np.ndarray:
         raise e
 
 
-def tuple2list(t: Tuple):
+def tuple2list(t: tuple):
     return list(t)
 
 
-def list2tuple(l: List):
+def list2tuple(l: list):
     return tuple(l)
+
+
+def to_numpy(x: np.ndarray|torch.Tensor|list|tuple) -> np.ndarray:
+    if isinstance(x, np.ndarray):
+        return x
+    if isinstance(x, torch.Tensor):
+        return x.detach().cpu().numpy()
+    if isinstance(x, list):
+        return np.array(x)
+    if isinstance(x, tuple):
+        return np.array(x)
+
+
+def to_tensor(x: np.ndarray|torch.Tensor|list|tuple):
+    if isinstance(x, np.ndarray):
+        return torch.Tensor(x)
+    if isinstance(x, torch.Tensor):
+        return x.detach().cpu()
+    if isinstance(x, list):
+        return torch.Tensor(x)
+    if isinstance(x, tuple):
+        return torch.Tensor(x)
+
 
 # torch shape: (B, C, H, W)
 # numpy shape: (C, H, W)

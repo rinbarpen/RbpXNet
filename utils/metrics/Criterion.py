@@ -1,26 +1,23 @@
+import numpy as np
+import torch
 import torch.nn as nn
-import torch.nn.functional as F
+import torch.nn.functional as F 
+from utils.metrics.losses import dice_loss, focal_loss
 
-from utils.metrics.losses import dice_loss
-import torch.nn as nn
-import torch.nn.functional as F
-
-from utils.metrics.losses import dice_loss
-
+from utils.utils import to_numpy, to_tensor
 
 class CombinedLoss(nn.Module):
-    def __init__(self, weight_dice=0.5, weight_ce=0.5):
+    def __init__(self, weights: tuple[float, ...], loss_functions):
         super(CombinedLoss, self).__init__()
-        self.weight_dice = weight_dice
-        self.weight_ce = weight_ce
+        self.weights = weights
+        self.loss_functions = loss_functions
     
-    def forward(self, pred, target, n_classes):
-        # 计算 Cross Entropy Loss
-        ce_loss = F.binary_cross_entropy_with_logits(pred, target) if n_classes == 2 else F.cross_entropy(pred, target) 
-        
-        # 计算 Dice Loss
-        dice = dice_loss(pred.detach().cpu().numpy(), target.detach().cpu().numpy(), n_classes)
-        
-        # 加权组合损失
-        total_loss = self.weight_dice * dice + self.weight_ce * ce_loss
+    def forward(self, pred: np.ndarray|torch.Tensor, target: np.ndarray|torch.Tensor):
+        # F.binary_cross_entropy(pred, target)
+        # F.cross_entropy(pred, target)
+        pred = to_numpy(pred)
+        target = to_numpy(target)
+        total_loss = 0.0
+        for (weight, loss_fn) in zip(self.weights, self.loss_functions):
+            total_loss = weight * loss_fn(pred, target)
         return total_loss
