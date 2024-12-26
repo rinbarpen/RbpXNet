@@ -78,7 +78,6 @@ def f_score(targets: np.ndarray, preds: np.ndarray, classes: Tuple[str, ...], sm
     return scores
 
 def recall_score(targets: np.ndarray, preds: np.ndarray, classes: Tuple[str, ...], smooth: float=1e-6):
-
     scores = dict()
     for i, label in enumerate(classes):
         target_binary = (targets == i)
@@ -137,11 +136,34 @@ def focal_score(targets: np.ndarray, preds: np.ndarray, classes: Tuple[str, ...]
 
     return scores
 
-def roc_score(targets: np.ndarray, preds: np.ndarray, classes: Tuple[str, ...], smooth: float=1e-6):
-    pass
+def tpr_score(targets: np.ndarray, preds: np.ndarray, classes: Tuple[str, ...], smooth: float=1e-6):
+    scores = dict()
+    for i, label in enumerate(classes):
+        target_binary = (targets == i)
+        pred_binary = (preds == i)
 
-def auc_score(targets: np.ndarray, preds: np.ndarray, classes: Tuple[str, ...], smooth: float=1e-6):
-    pass
+        TP = np.logical_and(pred_binary == 1, target_binary == 1).sum()
+        FP = np.logical_and(pred_binary == 1, target_binary == 0).sum()
+        FN = np.logical_and(pred_binary == 0, target_binary == 1).sum()
+        TN = np.logical_and(pred_binary == 0, target_binary == 0).sum()
+
+        scores[label] = (TP + smooth) / (TP + FN + smooth)
+
+    return scores
+
+def fpr_score(targets: np.ndarray, preds: np.ndarray, classes: Tuple[str, ...], smooth: float=1e-6):
+    scores = dict()
+    for i, label in enumerate(classes):
+        target_binary = (targets == i)
+        pred_binary = (preds == i)
+
+        FP = np.logical_and(pred_binary == 1, target_binary == 0).sum()
+        TN = np.logical_and(pred_binary == 0, target_binary == 0).sum()
+
+        scores[label] = (FP + smooth) / (FP + TN + smooth)
+
+    return scores
+
 
 def calcuate_scores(targets: np.ndarray, preds: np.ndarray, classes: Tuple[str, ...], smooth: float=1e-6) -> dict:    
     ious = iou_score(targets, preds, classes, smooth=smooth)
@@ -161,3 +183,12 @@ def calcuate_scores(targets: np.ndarray, preds: np.ndarray, classes: Tuple[str, 
         "precision": precision,
         "accuracy": accuracy,
     }
+
+def average_score(scores: dict[str, float]):
+    return np.array([score for score in scores.values()]).mean()
+
+def std_score(scores: dict[str, float]):
+    return np.array([score for score in scores.values()]).std()
+
+def norm_score(scores: dict[str, float]):
+    return f"{average_score(scores)}, {std_score(scores)}"

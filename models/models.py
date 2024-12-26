@@ -1,4 +1,4 @@
-def select_model(model: str, *args, **kwargs):
+def select_model(model: str, **kwargs):
     match model:
         case 'UNet':
             from .samples.unet import UNet
@@ -9,14 +9,14 @@ def select_model(model: str, *args, **kwargs):
         case 'SWA-UNet':
             from .like.unet.SWA import UNet
             return UNet(kwargs['n_channels'], kwargs['n_classes'], False)
-        case 'ML-UNet':
-            from .like.unet.MultiLink import UNet
-            return UNet(kwargs['n_channels'], kwargs['n_classes'], False)
         case 'Which-Way-UNet':
             from .like.unet.WhichWayImportant import UNet
             return UNet(kwargs['n_channels'], kwargs['n_classes'], False)
         case 'WayAttention-UNet':
             from .like.unet.WayAttention import UNet
+            return UNet(kwargs['n_channels'], kwargs['n_classes'], False)
+        case 'MixedUNet':
+            from .like.unet.MixedUNet import UNet
             return UNet(kwargs['n_channels'], kwargs['n_classes'], False)
         case _:
             raise ValueError(f'Not supported model: {model}')

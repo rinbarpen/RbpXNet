@@ -3,6 +3,7 @@ import numpy as np
 import os
 from PIL import Image
 
+import torch.quantization
 from tqdm import tqdm, trange
 
 import torch
@@ -161,7 +162,14 @@ class Trainer:
         return train_losses, valid_losses
 
     def train(self):
+        # if self.config['qat']:
+        #     model.qconfig = torch.quantization.get_default_qconfig(self.config['qat']['config'])
+        #     torch.quantization.prepare_qat(self.net, inplace=True)
+
         train_losses, valid_losses = self.train_model()
+
+        # if self.config['qat']:
+        #     torch.quantization.convert(self.net, inplace=True)
 
         use_validate = self.validator is not None
 

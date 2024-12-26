@@ -6,6 +6,8 @@ from datetime import datetime
 import torch
 from torch import nn
 from torch.cuda.amp.grad_scaler import GradScaler
+from torch.optim.adam import Adam
+from torch.optim.adamw import AdamW
 import numpy as np
 import random
 
@@ -82,7 +84,7 @@ if __name__ == "__main__":
         CONFIG["model"],
         n_channels=CONFIG["private"]["n_channels"],
         n_classes=CONFIG["private"]["n_classes"],
-        use_bilinear=True,
+        use_bilinear=False,
     )
 
     # TODO: enable multi-gpu to train
@@ -130,16 +132,10 @@ if __name__ == "__main__":
 
         # train my model
         if CONFIG["train"]:
-            # optimizer = torch.optim.RMSprop(
-            #     net.parameters(),
-            #     lr=CONFIG["learning_rate"],
-            #     eps=1e-8,
-            #     weight_decay=CONFIG["weight_decay"],
-            # )
-            # optimizer = torch.optim.AdamW(net.parameters(), lr=CONFIG['learning_rate'],
+            # optimizer = AdamW(net.parameters(), lr=CONFIG['learning_rate'],
             #                 betas=(0.9, 0.999), eps=1e-8,
             #                 weight_decay=CONFIG['weight_decay'], amsgrad=True)
-            optimizer = torch.optim.Adam(
+            optimizer = Adam(
                 net.parameters(),
                 lr=CONFIG["learning_rate"],
                 betas=(0.9, 0.999),
